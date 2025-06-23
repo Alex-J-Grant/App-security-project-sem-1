@@ -1,0 +1,60 @@
+<nav class="navbar navbar-expand-sm custom-darker-blue-bg navbar-dark" style="border-radius:0px;">
+    <div class="container-fluid">
+
+        <a href="/listings"><img class="img-fluid" style="max-height: 40px;" src="{{ url_for('static', filename='images/SC_logo.png') }}" alt="logo"></a>
+        <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#collapsibleNavbar">
+            <span class="navbar-toggler-icon"></span>
+        </button>
+        <div class="collapse navbar-collapse" id="collapsibleNavbar">
+            <ul class="navbar-nav">
+                {% if role == "Admin" %}
+                <li class="nav-item">
+                    <a class="nav-link" href="/seller">Admin Board</a>
+                </li>
+
+                {% else %}
+                <li class="nav-item dropdown">
+                    <a class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown">Pages</a>
+                    <ul class="dropdown-menu">
+                        <li><a class="dropdown-item" href="/listings">Listings</a></li>
+                        <li><a class="dropdown-item" href="/yourOrders">Orders</a></li>
+                    </ul>
+                </li>
+                {% endif %}
+                <li class="nav-item">
+                    <a class="nav-link" href="/review">Reviews</a>
+                </li>
+            </ul>
+            <ul class="nav navbar-nav navbar-right">
+                <li class="nav-item dropdown">
+                    <a class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown">Your Account</a>
+                    <ul class="dropdown-menu">
+                        <hr>
+                        {% if user_id %}
+                        <li><a href="fixme">Profile</a></li>
+                        <li><a href="fixme">Logout</a></li>
+                        {% else %}
+                        <li><a href="fixme">Login</a></li>
+                        <li><a href="fixme">Sign Up</a></li>
+                        {% endif %}
+                        {% if role == 'Admin' %}
+                        <li><a href="fixme">Admin</a></li>
+                        {% endif %}
+                        <hr>
+                        {% if role == 'Admin' %}
+                        <li><a class="dropdown-item" href="/faq/manage">Manage Faq</a></li>
+                        <li><a class="dropdown-item" href="/review/manage">Manage Review</a></li>
+                        <li><a class="dropdown-item" href="/contact/manage">Manage Contact</a></li>
+                        {% else %}
+                        <li><a class="dropdown-item" href="/faq">FAQ</a></li>
+                        <li><a class="dropdown-item" href="/review/update">Update Review</a></li>
+                        <li><a class="dropdown-item" href="/contact/add">Contact</a></li>
+                        {% endif %}
+                        <hr>
+                    </ul>
+                </li>
+                <li><a href="/yourCart" class="nav-item" style="text-decoration:none; color:#798EAD;"><span class="glyphicon glyphicon-shopping-cart"></span> Cart</a></li>
+            </ul>
+        </div>
+    </div>
+</nav>
