@@ -1,9 +1,62 @@
 {% extends "base.html" %}
-{% block title %}Listings{% endblock %}
+
+{% block title %}Home - Neuro Community{% endblock %}
+
 {% block content %}
+<div class="container my-4">
+  <div class="row">
+    <!-- Main Content -->
+    <div class="col-md-8 main-content">
+      <h2 class="mb-4">Popular Posts</h2>
 
-<h1> hi guys!</h1>
+      <!-- Single Post -->
+      <div class="post d-flex mb-3 p-3 border rounded bg-white">
+        <div class="d-flex flex-column align-items-center me-3">
+          <i class="bi bi-arrow-up vote-btn" style="cursor:pointer;"></i>
+          <div class="vote-count">123</div>
+          <i class="bi bi-arrow-down vote-btn" style="cursor:pointer;"></i>
+        </div>
+        <div>
+          <a href="#" class="post-title h5">Example Post Title #1</a>
+          <p>This is a short description of the post content. It should be concise and engaging.</p>
+          <div class="post-meta text-muted small">
+            Posted by <strong>user123</strong> • 2 hours ago • <i class="bi bi-chat"></i> 45 comments
+          </div>
+        </div>
+      </div>
 
+      <div class="post d-flex mb-3 p-3 border rounded bg-white">
+        <div class="d-flex flex-column align-items-center me-3">
+          <i class="bi bi-arrow-up vote-btn" style="cursor:pointer;"></i>
+          <div class="vote-count">45</div>
+          <i class="bi bi-arrow-down vote-btn" style="cursor:pointer;"></i>
+        </div>
+        <div>
+          <a href="#" class="post-title h5">Another Interesting Post Title</a>
+          <p>A brief snippet or summary about the content of this post goes here.</p>
+          <div class="post-meta text-muted small">
+            Posted by <strong>olduser</strong> • 1 day ago • <i class="bi bi-chat"></i> 12 comments
+          </div>
+        </div>
+      </div>
+    </div>
 
-
+    <!-- Sidebar -->
+    <div class="col-md-4">
+      <div class="sidebar">
+        <h4>Popular Topics</h4>
+        <ul class="list-unstyled">
+          <li><a href="#">#Health</a></li>
+          <li><a href="#">#Hobbies</a></li>
+          <li><a href="#">#Technology</a></li>
+          <li><a href="#">#News</a></li>
+          <li><a href="#">#Support</a></li>
+        </ul>
+      </div>
+      <div class="sidebar mt-4 text-center">
+        <a href="#" class="btn btn-primary btn-lg w-100">Create New Post</a>
+      </div>
+    </div>
+  </div>
+</div>
 {% endblock %}

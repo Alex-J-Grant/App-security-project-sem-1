@@ -69,11 +69,42 @@ def internal_error(error):
     return render_template('500.html'), 500
 
 
+
 @app.route("/")
 def home():
-    for m in genai.list_models():
-        print(m.name)
-    return render_template('home.html')
+    # Sample posts data
+    posts = [
+        {
+            'id': 1,
+            'title': 'Example Post Title #1',
+            'description': 'This is a short description of the post content. It should be concise and engaging.',
+            'votes': 123,
+            'comment_count': 45,
+            'author': 'user123',
+            'created_at': datetime.now(),
+        },
+        {
+            'id': 2,
+            'title': 'Another Interesting Post Title',
+            'description': 'A brief snippet or summary about the content of this post goes here.',
+            'votes': 45,
+            'comment_count': 12,
+            'author': 'olduser',
+            'created_at': datetime.now(),
+        }
+    ]
+
+    # Sample popular topics
+    popular_topics = [
+        {'name': 'Health', 'slug': 'health'},
+        {'name': 'Hobbies', 'slug': 'hobbies'},
+        {'name': 'Technology', 'slug': 'technology'},
+        {'name': 'News', 'slug': 'news'},
+        {'name': 'Support', 'slug': 'support'}
+    ]
+
+    return render_template('home.html', posts=posts, popular_topics=popular_topics)
+
 
 
 @app.route('/chatbot', methods=['POST'])
