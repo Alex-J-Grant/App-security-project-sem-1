@@ -1,0 +1,36 @@
+.post-card {
+      margin-bottom: 30px;
+      border-radius: 12px;
+      box-shadow: 0 0 8px rgba(0,0,0,0.08);
+    }
+    .post-header {
+      display: flex;
+      align-items: center;
+      padding: 1rem;
+      border-bottom: 1px solid #eee;
+    }
+    .avatar {
+      width: 40px;
+      height: 40px;
+      border-radius: 50%;
+      object-fit: cover;
+      margin-right: 10px;
+    }
+    .username {
+      font-weight: 600;
+      margin-right: 10px;
+    }
+    .timestamp {
+      font-size: 0.85em;
+      color: #888;
+    }
+    .post-img {
+      width: 100%;
+      max-height: 400px;
+      object-fit: cover;
+    }
+
+    #post_link{
+    color: black;
+    text-decoration: none;
+    }
