@@ -1,0 +1,78 @@
+-- This script is to initialise the database for our app sec project. 
+-- If any changes were to be made please consult with the team.
+-- If you do not know how to use this script, please go to chatgpt. Thank you.
+-- user = developer
+-- password = temppassword
+
+-- Deleting existing schema if applicable
+Drop schema if exists `app_sec_db`;
+Drop user if exists 'developer';
+
+CREATE SCHEMA `app_sec_db`;
+
+create user 'developer' identified by 'temppassword';
+grant select on app_sec_db.* to developer;
+
+CREATE TABLE app_sec_db.USERS(
+    USER_ID VARCHAR(50) primary key,
+    USERNAME VARCHAR(20) NOT NULL UNIQUE,
+    FNAME VARCHAR(15) NOT NULL UNIQUE,
+    LNAME VARCHAR(15) NOT NULL UNIQUE,
+    GENDER VARCHAR(25) NOT NULL,
+    DOB DATE NOT NULL,
+    EMAIL VARCHAR(255) NOT NULL UNIQUE,
+    PASSWORD_HASH VARCHAR(128) NOT NULL,
+    TEL_NO VARCHAR(20) NOT NULL UNIQUE,
+    ADDRESS VARCHAR(50),
+    POSTAL_CODE VARCHAR(10),
+    IS_ACTIVE BOOLEAN NOT NULL,
+    IS_VERIFIED BOOLEAN NOT NULL,
+    CREATED_AT TIMESTAMP DEFAULT CURRENT_TIMESTAMP NOT NULL,
+    ROLE ENUM('Admin', 'User') DEFAULT 'User' NOT NULL,
+    SETTINGS JSON DEFAULT '{}'
+  );
+
+CREATE TABLE app_sec_db.SUBCOMMUNITY(
+  ID VARCHAR(50) primary key,
+  NAME VARCHAR(30) NOT NULL UNIQUE,
+  BANNER_IMAGE VARCHAR(255) NOT NULL, 
+  MEMBER_COUNT INT NOT NULL,
+  DESCRIPTION VARCHAR(255),
+  COMM_PFP VARCHAR(255),
+  TAG VARCHAR(255) NOT NULL
+);
+
+CREATE TABLE app_sec_db.POST(
+  POST_ID VARCHAR(50) primary key,
+  USER_ID VARCHAR(50) NOT NULL,
+  COMM_ID VARCHAR(50) NOT NULL,
+  TITLE VARCHAR(255) NOT NULL,
+  IMAGE VARCHAR(255),
+  LIKE_COUNT INT DEFAULT 0, 
+  COMMENT_COUNT INT DEFAULT 0,
+  FOREIGN KEY (USER_ID) REFERENCES `USER`(USER_ID)
+  FOREIGN KEY (COMM_ID) REFERENCES SUBCOMMUNITY(ID)
+);
+
+CREATE TABLE app_sec_db.FRIEND_REQ(
+  ID INT primary key,
+  SENDER_ID VARCHAR(50) NOT NULL,
+  RECV_ID VARCHAR(50) NOT NULL,
+  STATUS ENUM('pending', 'accepted', 'rejected') DEFAULT 'pending',
+  CREATED_AT DATETIME DEFAULT CURRENT_TIMESTAMP,
+  FOREIGN KEY (SENDER_ID) REFERENCES USERS(ID),
+  FOREIGN KEY (RECV_ID) REFERENCES USERS(ID)
+);
+
+CREATE TABLE app_sec_db.MESSAGES(
+  ID INT primary key,
+  SENDER_ID INT NOT NULL,
+  RECV_ID INT NOT NULL,
+  CONTENT TEXT NOT NULL,
+  CREATED_AT DATETIME DEFAULT CURRENT_TIMESTAMP,
+  IS_READ BOOLEAN DEFAULT FALSE,
+  FOREIGN KEY (SENDER_ID) REFERENCES USERS(ID),
+  FOREIGN KEY (RECV_ID) REFERENCES USERS(ID)
+);
+
+
