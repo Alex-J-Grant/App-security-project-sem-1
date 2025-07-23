@@ -1,32 +1,50 @@
 {% extends "base.html" %}
 
-{% block title %}Home - Neuro Community{% endblock %}
+{% block title %}r/{{ community.name }} - {{ community.title }}{% endblock %}
 
 {% block content %}
-<div class="container py-5">
+<div class="container py-4">
 
+    <!-- Subreddit Banner -->
+    <div class="subreddit-banner position-relative mb-4 rounded shadow"
+         style="background-image: url('{{ url_for('static', filename=community.banner_image) }}'); background-size: cover; height: 200px;">
+
+        <!-- Subreddit Icon -->
+        <img src="{{ url_for('static', filename=community.icon_image) }}"
+             class="rounded-circle border border-light position-absolute"
+             style="width: 72px; height: 72px; bottom: -36px; left: 20px; background-color: white; padding: 4px;">
+    </div>
+
+    <!-- Subreddit Title and Description -->
+    <div class="ps-5 ms-5 mt-3">
+        <h2 class="fw-bold">c/{{ community.name }}</h2>
+        <p class="text-muted">{{ community.description }}</p>
+    </div>
+
+    <!-- Posts Loop -->
     {% for post in posts %}
 
     <div class="card post-card">
         <a href="/view_post/{{post.id}}" id="post_link">
-        <!-- Post Header -->
-        <div class="post-header d-flex align-items-center p-3 border-bottom">
-            <img src="{{ url_for('static', filename=post.avatar_url) }}" class="avatar me-3" alt="Avatar">
-            <div>
-                <div class="username">{{ post.username }}</div>
-                <div class="timestamp">{{ post.created_at }}</div>
+            <!-- Post Header -->
+            <div class="post-header d-flex align-items-center p-3 border-bottom">
+                <img src="{{ url_for('static', filename=post.avatar_url) }}" class="avatar me-3" alt="Avatar">
+                <div>
+                    <div class="username">{{ post.username }}</div>
+                    <div class="timestamp">{{ post.created_at }}</div>
+                </div>
             </div>
-        </div>
 
-        <!-- Post Content -->
-        <div class="card-body">
-            <h5 class="card-title">{{ post.title }}</h5>
-            <p class="card-text">{{ post.description }}</p>
+            <!-- Post Content -->
+            <div class="card-body">
+                <h5 class="card-title">{{ post.title }}</h5>
+                <p class="card-text">{{ post.description }}</p>
 
-            {% if post.image_url %}
-            <img src="{{ url_for('static', filename=post.image_url) }}" alt="Post Image" class="post-img mt-3 rounded">
-            {% endif %}
-        </div>
+                {% if post.image_url %}
+                <img src="{{ url_for('static', filename=post.image_url) }}" alt="Post Image"
+                     class="post-img mt-3 rounded">
+                {% endif %}
+            </div>
         </a>
         <!-- Like and Comment Counters -->
         <div class="card-footer d-flex justify-content-start gap-4 text-muted small">
@@ -50,5 +68,6 @@
     </div>
 
     {% endfor %}
+
 </div>
 {% endblock %}
