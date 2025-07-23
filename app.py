@@ -1,5 +1,4 @@
 from flask import Flask
-<<<<<<< HEAD
 import shelve
 import html
 from flask import *
@@ -15,7 +14,6 @@ import bleach
 from extensions import db
 # from routes import
 from routes.test import testbp
-=======
 from flask_limiter import Limiter
 from flask_limiter.util import get_remote_address
 from routes.home import homebp
