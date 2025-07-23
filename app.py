@@ -32,6 +32,7 @@ def create_app():
     app.register_blueprint(homebp)
     app.register_blueprint(chatbot)
     app.register_blueprint(view_post)
+    app.register_blueprint(community)
 
     return app
 

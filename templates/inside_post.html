@@ -43,7 +43,7 @@
             </div>
         </div>
 
-        <a href="{{ url_for('home.home') }}" class="btn btn-secondary mt-3">Back to Feed</a>
+        <a href="{{ back_url or url_for('home.home') }}" class="btn btn-secondary mt-3">Back to Feed</a>
 
     </div>
 </div>
