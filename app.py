@@ -1,4 +1,5 @@
 from flask import Flask
+<<<<<<< HEAD
 import shelve
 import html
 from flask import *
@@ -11,16 +12,23 @@ from datetime import datetime
 import markdown
 import bleach
 # from routes import
+=======
+from extensions import db
+# from routes import
+from routes.test import testbp
+>>>>>>> weifeng
 
 def create_app():
     app =Flask(__name__, static_folder = "static")
 
     app.config.from_mapping(
-        # NEEDS TO BE CHANGED VERY IMPORTANT 
-        SECRET_KEY = "SECRET"
-    #     U GUYS NEED TO SET YOUR OWN DATABASE LINK SINCE WE ARE ALL USING A LOCAL SQL SERVER
-    #     DATABASE = 
+        # need to change key very important 
+        SECRET_KEY="SECRET",
+        SQLALCHEMY_DATABASE_URI="mysql+pymysql://developer:temppassword@localhost:3306/app_sec_db",
+        SQLALCHEMY_TRACK_MODIFICATIONS=False
+
     )
+<<<<<<< HEAD
     # register blueprints here for your routes
     return app
 # Allow safe tags used by Markdown + code rendering
@@ -152,11 +160,17 @@ def chatbot():
 
 
 
+=======
+    db.init_app(app)
+    app.register_blueprint(testbp)
+    return app
+>>>>>>> weifeng
 
 
 if __name__ == '__main__':
     app = create_app()
     app.run()
+<<<<<<< HEAD
 
 
 
@@ -167,3 +181,5 @@ if __name__ == '__main__':
 
 
 >>>>>>> 3e7f6fc08d7b64fd981a08174b0077c2e2fa03a1
+=======
+>>>>>>> weifeng
