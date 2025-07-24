@@ -1,6 +1,6 @@
 {% extends "base.html" %}
 
-{% block title %}Home - Neuro Community{% endblock %}
+{% block title %}Home{% endblock %}
 
 {% block content %}
 <div class="container py-5">
@@ -11,7 +11,7 @@
         <a href="/view_post/{{post.id}}" id="post_link">
         <!-- Post Header -->
         <div class="post-header d-flex align-items-center p-3 border-bottom">
-            <img src="{{ url_for('static', filename=post.avatar_url) }}" class="avatar me-3" alt="Avatar">
+            <img src="{{post.subcommunity_pfp}}" class="avatar me-3" alt="Avatar">
             <div>
                 <div class="username">{{ post.username }}</div>
                 <div class="timestamp">{{ post.created_at }}</div>
@@ -24,7 +24,7 @@
             <p class="card-text">{{ post.description }}</p>
 
             {% if post.image_url %}
-            <img src="{{ url_for('static', filename=post.image_url) }}" alt="Post Image" class="post-img mt-3 rounded">
+            <img src="{{post.image_url}}" alt="Post Image" class="post-img mt-3 rounded">
             {% endif %}
         </div>
         </a>

@@ -9,15 +9,15 @@ Drop database if exists `app_sec_db`;
 Drop user if exists 'developer';
 
 CREATE SCHEMA `app_sec_db`;
-
+USE app_sec_db;
 create user 'developer' identified by 'temppassword';
-grant select on app_sec_db.* to developer;
+GRANT SELECT, INSERT, UPDATE, DELETE on app_sec_db.* to developer;
 
 CREATE TABLE app_sec_db.USERS(
     USER_ID VARCHAR(50) primary key,
     USERNAME VARCHAR(20) NOT NULL UNIQUE,
-    FNAME VARCHAR(15) NOT NULL UNIQUE,
-    LNAME VARCHAR(15) NOT NULL UNIQUE,
+    FNAME VARCHAR(15) NOT NULL,
+    LNAME VARCHAR(15) NOT NULL,
     GENDER VARCHAR(25) NOT NULL,
     DOB DATE NOT NULL,
     EMAIL VARCHAR(255) NOT NULL UNIQUE,
@@ -48,8 +48,10 @@ CREATE TABLE app_sec_db.POST(
   COMM_ID VARCHAR(50) NOT NULL,
   TITLE VARCHAR(255) NOT NULL,
   IMAGE VARCHAR(255),
+  DESCRIPT VARCHAR(225),
   LIKE_COUNT INT DEFAULT 0, 
   COMMENT_COUNT INT DEFAULT 0,
+  created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
   FOREIGN KEY (USER_ID) REFERENCES USERS(USER_ID),
   FOREIGN KEY (COMM_ID) REFERENCES SUBCOMMUNITY(ID)
 );

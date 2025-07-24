@@ -1,5 +1,4 @@
 from flask import Flask
-<<<<<<< HEAD
 import shelve
 import html
 from flask import *
@@ -15,7 +14,7 @@ import bleach
 from extensions import db
 # from routes import
 from routes.test import testbp
-=======
+
 from flask_limiter import Limiter
 from flask_limiter.util import get_remote_address
 from routes.home import homebp
@@ -39,6 +38,7 @@ def create_app():
     app.register_blueprint(view_post)
     app.register_blueprint(community)
     app.register_blueprint(testbp)
+    app.register_blueprint(create_post)
 
     return app
 
