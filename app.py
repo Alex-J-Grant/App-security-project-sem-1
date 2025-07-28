@@ -14,7 +14,7 @@ import bleach
 from extensions import db
 # from routes import
 from routes.test import testbp
-
+from helperfuncs.error_handling import register_error_handlers
 from flask_limiter import Limiter
 from flask_limiter.util import get_remote_address
 from routes.home import homebp
@@ -31,6 +31,10 @@ def create_app():
         SQLALCHEMY_TRACK_MODIFICATIONS=False
 
     )
+    #make sure uploads are not too big for server
+    app.config['MAX_CONTENT_LENGTH'] = 1024 * 1024
+    #ensure only image files uploaded
+    app.config['UPLOAD_EXTENSIONS'] = ['.jpg', '.png', '.gif','.jpeg']
     db.init_app(app)
     # register blueprints here for your routes
     app.register_blueprint(homebp)
@@ -39,6 +43,7 @@ def create_app():
     app.register_blueprint(community)
     app.register_blueprint(testbp)
     app.register_blueprint(create_post)
+    register_error_handlers(app)
 
     return app
 

@@ -1,17 +1,15 @@
-from flask import *
+
 import os
 import uuid
 from flask import Blueprint, render_template, request, redirect, flash, url_for, session
-from werkzeug.utils import secure_filename
-from flask_wtf import FlaskForm
-from wtforms import StringField, TextAreaField, FileField
-from wtforms.validators import DataRequired, Length
+
 from extensions import db
 from wtforms import ValidationError
 from forms.postforms import PostForm
 from sqlalchemy import text
-
-ALLOWED_EXTENSIONS = {'png', 'jpg', 'jpeg', 'gif'}
+from PIL import Image
+from helperfuncs.validation import allowed_mime_type, virus_check
+import bleach
 UPLOAD_FOLDER_POST = 'static/images/post_images'
 
 view_post = Blueprint('view_post', __name__, url_prefix='/view_post')
@@ -124,29 +122,54 @@ def upload_post():
         description = form.description.data.strip()
         image_file = form.image.data
 
-        filename = None
+        # Check for valid MIME type or malware
+        if allowed_mime_type(image_file) or virus_check(image_file):
 
-        filename = uuid.uuid4().hex
-        filepath = os.path.join(UPLOAD_FOLDER_POST, filename)
-        image_file.save(filepath)
+            orig_filename = image_file.filename
+            ext = os.path.splitext(orig_filename)[1].lower()  # e.g., '.png'
 
+            if ext not in ['.png', '.jpg', '.jpeg', '.gif']:
+                flash('Please upload image files only', 'danger')
+                return render_template('upload_post.html', form=form)
 
-        # Insert into DB using parameterized query
-        stmt = text("""
-            INSERT INTO POST (POST_ID, USER_ID, COMM_ID, TITLE, IMAGE,DESCRIPT)
-            VALUES (:post_id, :user_id, :comm_id, :title, :image, :description)
-        """)
-        with db.engine.connect() as conn:
-            conn.execute(stmt, {
-                "post_id": str(uuid.uuid4()),
-                "user_id": 'user-1',
-                "comm_id": "comm-1",  # Replace with actual logic
-                "title": title,
-                "image": filename,
-                "description":description
-            })
-            conn.commit()
+            # Strip metadata in-memory
+            with Image.open(image_file.stream) as img:
+                data = img.getdata()
+                clean_img = Image.new(img.mode, img.size)
+                clean_img.putdata(data)
 
-        flash("Post uploaded successfully", "success")
-        return redirect(url_for('home.home'))  # or wherever you want
+                # Ensure correct format when saving
+                format_map = {
+                    '.jpg': 'JPEG',
+                    '.jpeg': 'JPEG',
+                    '.png': 'PNG',
+                    '.gif': 'GIF'
+                }
+
+                filename = uuid.uuid4().hex + ext
+                filepath = os.path.join(UPLOAD_FOLDER_POST, filename)
+
+                clean_img.save(filepath, format=format_map[ext])
+
+            # Insert into DB using parameterized query
+            stmt = text("""
+                INSERT INTO POST (POST_ID, USER_ID, COMM_ID, TITLE, IMAGE, DESCRIPT)
+                VALUES (:post_id, :user_id, :comm_id, :title, :image, :description)
+            """)
+            with db.engine.connect() as conn:
+                conn.execute(stmt, {
+                    "post_id": str(uuid.uuid4()),
+                    "user_id": 'user-2',
+                    "comm_id": "comm-1",
+                    "title": title,
+                    "image": filename,
+                    "description": description
+                })
+                conn.commit()
+
+            flash("Post uploaded successfully", "success")
+            return redirect(url_for('home.home'))
+        else:
+            flash('Please upload image files only', 'danger')
+
     return render_template('upload_post.html', form=form)

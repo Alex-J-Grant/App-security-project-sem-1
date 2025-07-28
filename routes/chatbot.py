@@ -16,6 +16,8 @@ from flask_limiter import Limiter
 #set max length for inputs
 MAX_LENGTH = 500
 
+genai.configure(api_key=os.getenv("GOOGLE_API_KEY"))
+
 #watch out for dangerous keywords
 dangerous_patterns = ['system:', 'ignore previous', 'act as']
 
@@ -27,6 +29,7 @@ ALLOWED_TAGS = set(bleach.sanitizer.ALLOWED_TAGS).union({'p', 'br', 'pre', 'code
 ALLOWED_ATTRIBUTES = {
     'code': ['class']
 }
+
 chatbot = Blueprint('chatbot', __name__, url_prefix='')
 
 @chatbot.route('/chatbot', methods=['POST'])
