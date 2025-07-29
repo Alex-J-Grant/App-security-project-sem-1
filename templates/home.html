@@ -1,32 +1,45 @@
 {% extends "base.html" %}
 
-{% block title %}Home - Neuro Community{% endblock %}
+{% block title %}Home{% endblock %}
 
 {% block content %}
 <div class="container py-5">
-
+    {% with messages = get_flashed_messages(with_categories=true) %}
+    {% if messages %}
+    {% for category, message in messages %}
+    <div class="alert alert-{{ category }} alert-dismissible fade show" role="alert">
+        {{ message }}
+        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+    </div>
+    {% endfor %}
+    {% endif %}
+    {% endwith %}
     {% for post in posts %}
 
     <div class="card post-card">
-        <a href="/view_post/{{post.id}}" id="post_link">
+
         <!-- Post Header -->
         <div class="post-header d-flex align-items-center p-3 border-bottom">
-            <img src="{{ url_for('static', filename=post.avatar_url) }}" class="avatar me-3" alt="Avatar">
+            <img src="{{post.subcommunity_pfp}}" class="avatar me-3" alt="Avatar">
             <div>
-                <div class="username">{{ post.username }}</div>
-                <div class="timestamp">{{ post.created_at }}</div>
+                <a href="/communities/{{ post.subcommunity_name }} " class="post_link">
+                    <div class="username">c/{{ post.subcommunity_name }}</div>
+                </a>
+
+                <div class="timestamp">u/{{post.username}} {{ post.created_at }}</div>
+
             </div>
         </div>
+        <a href="/view_post/{{post.id}}" class="post_link">
+            <!-- Post Content -->
+            <div class="card-body">
+                <h5 class="card-title">{{ post.title }}</h5>
+                <p class="card-text">{{ post.description }}</p>
 
-        <!-- Post Content -->
-        <div class="card-body">
-            <h5 class="card-title">{{ post.title }}</h5>
-            <p class="card-text">{{ post.description }}</p>
-
-            {% if post.image_url %}
-            <img src="{{ url_for('static', filename=post.image_url) }}" alt="Post Image" class="post-img mt-3 rounded">
-            {% endif %}
-        </div>
+                {% if post.image_url %}
+                <img src="{{post.image_url}}" alt="Post Image" class="post-img mt-3 rounded">
+                {% endif %}
+            </div>
         </a>
         <!-- Like and Comment Counters -->
         <div class="card-footer d-flex justify-content-start gap-4 text-muted small">

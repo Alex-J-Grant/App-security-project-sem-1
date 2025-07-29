@@ -1,48 +1,52 @@
 # auth.py
 
-from flask import Blueprint, render_template
+from flask import Blueprint, render_template, url_for
+from extensions import db
+from sqlalchemy import text
+import os
+UPLOAD_FOLDER_POST = 'static/images/post_images'
 
 # Define the blueprint
 homebp = Blueprint('home', __name__, url_prefix='')
 
+
 # Routes
 @homebp.route('/')
 def home():
-    # Connect to SQLite or your SQL backend
-    # conn = sqlite3.connect('database/posts.db')
-    # conn.row_factory = sqlite3.Row  # Enables dict-style access
-    #
-    # cursor = conn.cursor()
-    # cursor.execute("SELECT * FROM posts ORDER BY created_at DESC")
-    # posts = cursor.fetchall()
-    # conn.close()
+    query = text("""
+           SELECT 
+            p.POST_ID AS id,
+            p.TITLE AS title,
+            p.IMAGE AS image_url,
+            p.DESCRIPT,
+            u.USERNAME AS username,
+            s.NAME AS subcommunity_name,
+            s.COMM_PFP AS subcommunity_pfp,
+            p.CREATED_AT AS created_at,
+            p.LIKE_COUNT AS likes,
+            p.COMMENT_COUNT AS comments
+            FROM POST p
+            JOIN USERS u ON p.USER_ID = u.USER_ID
+            JOIN SUBCOMMUNITY s ON p.COMM_ID = s.ID
+            ORDER BY p.CREATED_AT DESC;
+       """)
+    # Execute the query using SQLAlchemy Core
+    result = db.session.execute(query)
 
-    posts = [
-        {
-            'id': 1,
-            'title': 'Exploring AI',
-            'description': '<h1>Hello</h1>',
-            'image_url': 'images/John_Placeholder.png',
-            'username': 'alexj',
-            'avatar_url': 'images/John_Placeholder.png',
-            'created_at': '2025-07-20 14:32:00',
-            'likes': 34,
-            'comments': 12
-        },
-        {
-            'id': 7,
-            'title': 'test',
-            'description': 'test content here...',
-            'image_url': '',
-            'username': 'alexj',
-            'avatar_url': 'images/John_Placeholder.png',
-            'created_at': '2025-07-20 14:32:00',
-            'likes': 400,
-            'comments': 123
-        }
-
-    ]
+    # Convert to list of dictionaries
+    posts = []
+    for row in result:
+        posts.append({
+            'id': row.id,
+            'title': row.title,
+            'description': row.DESCRIPT,
+            'image_url':  url_for('static', filename=f'images/post_images/{row.image_url}') if row.image_url else None,
+            'username': row.username,
+            'subcommunity_pfp': url_for('static', filename=f'images/profile_pictures/{row.subcommunity_pfp}') if row.subcommunity_pfp else '/static/images/SC_logo.png',
+            'subcommunity_name':row.subcommunity_name,
+            'created_at': row.created_at.strftime('%Y-%m-%d %H:%M:%S'),
+            'likes': row.likes,
+            'comments': row.comments
+        })
 
     return render_template('home.html', posts=posts)
-
-
