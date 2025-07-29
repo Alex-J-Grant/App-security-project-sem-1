@@ -3,3 +3,4 @@ __pycache/
 *.pyc
 .flaskenv
 weifengtodo.txt
+*.pem
