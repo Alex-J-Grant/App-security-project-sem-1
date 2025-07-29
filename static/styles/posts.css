@@ -30,7 +30,12 @@
       object-fit: cover;
     }
 
-    #post_link{
+    .post_link{
     color: black;
     text-decoration: none;
+    hover:
     }
+
+    .post_link:hover {
+  color:#414141;
+}

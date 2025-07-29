@@ -13,7 +13,7 @@ import bleach
 UPLOAD_FOLDER_POST = 'static/images/post_images'
 
 view_post = Blueprint('view_post', __name__, url_prefix='/view_post')
-community = Blueprint('community',__name__,url_prefix='/communities')
+
 create_post = Blueprint('create_post',__name__)
 
 @view_post.route('/<post_id>')
@@ -24,6 +24,7 @@ def view_post_route(post_id):
             p.TITLE AS title,
             p.IMAGE AS image_url,
             p.DESCRIPT,
+            u.USERPFP as userpfp,
             u.USERNAME AS username,
             s.NAME AS subcommunity_name,
             s.COMM_PFP AS subcommunity_pfp,
@@ -48,7 +49,9 @@ def view_post_route(post_id):
         'description': result.DESCRIPT,
         'image_url':  url_for('static', filename=f'images/post_images/{result.image_url}') if result.image_url else None,
         'username': result.username,
-        'subcommunity_pfp': url_for('static', filename=f'images/post_images/{result.subcommunity_pfp}') if result.subcommunity_pfp else '/static/images/SC_logo.png',
+        'userpfp': result.userpfp if result.userpfp else '/static/images/2903-default-blue.jpg',
+        'subcommunity_pfp': url_for('static', filename=f'images/profile_pictures/{result.subcommunity_pfp}') if result.subcommunity_pfp else '/static/images/SC_logo.png',
+        'subcommunity_name': result.subcommunity_name,
         'created_at': result.created_at.strftime('%Y-%m-%d %H:%M:%S'),
         'likes': result.likes,
         'comments': result.comments
@@ -56,78 +59,27 @@ def view_post_route(post_id):
     return render_template('inside_post.html', post=post, back_url = request.referrer)
 
 
-@community.route("/<string:subreddit_name>")
-def community_route(subreddit_name):
-    # db = get_db_connection()
-    # cursor = db.cursor(dictionary=True)
-    #
-    # # Get subreddit info
-    # cursor.execute("SELECT * FROM subreddits WHERE name = %s", (subreddit_name,))
-    # subreddit = cursor.fetchone()
-    # if not subreddit:
-    #     abort(404, "Subreddit not found.")
-    #
-    # # Get posts from that subreddit
-    # cursor.execute("""
-    #     SELECT posts.*, users.username, users.avatar_url
-    #     FROM posts
-    #     JOIN users ON posts.user_id = users.id
-    #     WHERE posts.subreddit_id = %s
-    #     ORDER BY posts.created_at DESC
-    # """, (subreddit["id"],))
-    # posts = cursor.fetchall()
-    #
-    # db.close()
-    community = {
-        "name": "cybersec",
-        "title": "Cybersecurity",
-        "description": "Discuss threats, exploits, malware, and red/blue team ops.",
-        "banner_image": "images/John_Placeholder.png",
-        "icon_image": "images/John_Placeholder.png"
-    }
-
-    posts = [
-            {
-                'id': 1,
-                "username": "infosec_nerd",
-                "avatar_url": "images/avatars/user1.png",
-                "title": "Found a new XSS payload",
-                "description": "Check this out: `<img src=x onerror=alert(1)>`",
-                "image_url": None,
-                "created_at": "2025-07-21 10:20:00",
-                "likes": 23,
-                "comments": 5,
-            },
-            {
-                'id': 7,
-                "username": "packet_sniffer",
-                "avatar_url": "images/avatars/user2.png",
-                "title": "PCAP analysis of the latest attack",
-                "description": "I uploaded some screenshots of malicious DNS tunneling.",
-                "image_url": "images/posts/pcap.png",
-                "created_at": "2025-07-21 08:12:00",
-                "likes": 45,
-                "comments": 12,
-            }
-        ]
-    return render_template("community.html", community=community, posts=posts)
-
-
-
 @create_post.route('/upload_post', methods=['GET', 'POST'])
 def upload_post():
     form = PostForm()
+    with db.engine.connect() as conn:
+        result = conn.execute(text("SELECT ID, NAME FROM SUBCOMMUNITY")).fetchall()
+        form.community.choices = [(row[0], row[1]) for row in result]
+
     if form.validate_on_submit():
-        title = form.title.data.strip()
-        description = form.description.data.strip()
+        title = bleach.clean(form.title.data.strip(), tags=[], strip=True)
+        description = bleach.clean(form.description.data.strip(), tags=[], strip=True)
+        comm_id = bleach.clean(form.community.data.strip(), tags=[], strip=True)
         image_file = form.image.data
 
-        # Check for valid MIME type or malware
-        if allowed_mime_type(image_file) or virus_check(image_file):
 
+
+        try:
+            #get the file extension
             orig_filename = image_file.filename
             ext = os.path.splitext(orig_filename)[1].lower()  # e.g., '.png'
 
+            #if somehow got past everything else
             if ext not in ['.png', '.jpg', '.jpeg', '.gif']:
                 flash('Please upload image files only', 'danger')
                 return render_template('upload_post.html', form=form)
@@ -148,7 +100,6 @@ def upload_post():
 
                 filename = uuid.uuid4().hex + ext
                 filepath = os.path.join(UPLOAD_FOLDER_POST, filename)
-
                 clean_img.save(filepath, format=format_map[ext])
 
             # Insert into DB using parameterized query
@@ -159,8 +110,8 @@ def upload_post():
             with db.engine.connect() as conn:
                 conn.execute(stmt, {
                     "post_id": str(uuid.uuid4()),
-                    "user_id": 'user-2',
-                    "comm_id": "comm-1",
+                    "user_id": 'u001',
+                    "comm_id": comm_id ,
                     "title": title,
                     "image": filename,
                     "description": description
@@ -169,7 +120,12 @@ def upload_post():
 
             flash("Post uploaded successfully", "success")
             return redirect(url_for('home.home'))
-        else:
-            flash('Please upload image files only', 'danger')
+        except Exception as e:
+            #log later
+            print(e)
+            # Delete saved files
+            if os.path.exists(filepath):
+                os.remove(filepath)
+            flash("Sorry something went wrong please try again later.", "danger")
 
     return render_template('upload_post.html', form=form)

@@ -1,9 +1,9 @@
 {% extends "base.html" %}
-{% block title %}Post Upload{% endblock %}
+
+{% block title %}Create Community{% endblock %}
 
 {% block content %}
-
-<div class="container mt-4">
+<div class="container mt-5 pb-5">
     {% with messages = get_flashed_messages(with_categories=true) %}
     {% if messages %}
     {% for category, message in messages %}
@@ -14,21 +14,18 @@
     {% endfor %}
     {% endif %}
     {% endwith %}
-    <h2>Create a New Post</h2>
-
+    <h2 class="mb-4">Create a New Community</h2>
     <form method="POST" enctype="multipart/form-data">
         {{ form.hidden_tag() }}
 
-        <!-- Title Field -->
         <div class="mb-3">
-            {{ form.title.label(class="form-label") }}
-            {{ form.title(class="form-control" + (" is-invalid" if form.title.errors else "")) }}
-            {% for error in form.title.errors %}
+            {{ form.name.label(class="form-label") }}
+            {{ form.name(class="form-control" + (" is-invalid" if form.name.errors else "")) }}
+            {% for error in form.name.errors %}
             <div class="invalid-feedback">{{ error }}</div>
             {% endfor %}
         </div>
 
-        <!-- Description Field -->
         <div class="mb-3">
             {{ form.description.label(class="form-label") }}
             {{ form.description(class="form-control" + (" is-invalid" if form.description.errors else ""), rows=4) }}
@@ -36,37 +33,44 @@
             <div class="invalid-feedback">{{ error }}</div>
             {% endfor %}
         </div>
+
         <div class="mb-3">
-            {{ form.community.label(class="form-label") }}
-            {{ form.community(class="form-control select2") }}
-            {% for error in form.community.errors %}
+            {{ form.tag.label(class="form-label") }}
+            {{ form.tag(class="form-select" + (" is-invalid" if form.tag.errors else "")) }}
+            {% for error in form.tag.errors %}
             <div class="invalid-feedback">{{ error }}</div>
             {% endfor %}
         </div>
-        <!-- Image Upload Field -->
+
         <div class="mb-3">
-            {{ form.image.label(class="form-label") }}
-            {{ form.image(class="form-control" + (" is-invalid" if form.image.errors else "")) }}
-            {% for error in form.image.errors %}
+            {{ form.banner_image.label(class="form-label") }}
+            {{ form.banner_image(class="form-control" + (" is-invalid" if form.banner_image.errors else "")) }}
+            {% for error in form.banner_image.errors %}
+            <div class="invalid-feedback">{{ error }}</div>
+            {% endfor %}
+        </div>
+
+        <div class="mb-3">
+            {{ form.icon_image.label(class="form-label") }}
+            {{ form.icon_image(class="form-control" + (" is-invalid" if form.icon_image.errors else "")) }}
+            {% for error in form.icon_image.errors %}
             <div class="invalid-feedback">{{ error }}</div>
             {% endfor %}
         </div>
 
         <button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#confirmModal">
-            Create Post
+            Create Community
         </button>
         <button id="realSubmit" type="submit" style="display:none;"></button>
     </form>
-</div>
-<script>
-$(document).ready(function() {
-    $('.select2').select2({
-        placeholder: "Select a community",
-        allowClear: true
-    });
-});
-</script>
-<div class="modal fade" id="confirmModal" tabindex="-1" aria-labelledby="confirmModalLabel" aria-hidden="true">
+
+
+
+
+
+
+    <!-- Bootstrap Modal -->
+    <div class="modal fade" id="confirmModal" tabindex="-1" aria-labelledby="confirmModalLabel" aria-hidden="true">
         <div class="modal-dialog modal-dialog-centered">
             <div class="modal-content">
                 <div class="modal-header">
@@ -74,7 +78,7 @@ $(document).ready(function() {
                     <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Cancel"></button>
                 </div>
                 <div class="modal-body">
-                    Are you sure you want to make this post?
+                    Are you sure you want to create this community?
                 </div>
                 <div class="modal-footer">
                     <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
@@ -89,4 +93,5 @@ $(document).ready(function() {
           document.getElementById("realSubmit").click();
         }
     </script>
+</div>
 {% endblock %}

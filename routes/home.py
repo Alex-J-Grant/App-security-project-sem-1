@@ -42,7 +42,8 @@ def home():
             'description': row.DESCRIPT,
             'image_url':  url_for('static', filename=f'images/post_images/{row.image_url}') if row.image_url else None,
             'username': row.username,
-            'subcommunity_pfp': url_for('static', filename=f'images/post_images/{row.subcommunity_pfp}') if row.subcommunity_pfp else '/static/images/SC_logo.png',
+            'subcommunity_pfp': url_for('static', filename=f'images/profile_pictures/{row.subcommunity_pfp}') if row.subcommunity_pfp else '/static/images/SC_logo.png',
+            'subcommunity_name':row.subcommunity_name,
             'created_at': row.created_at.strftime('%Y-%m-%d %H:%M:%S'),
             'likes': row.likes,
             'comments': row.comments

@@ -1,16 +1,16 @@
 {% extends "base.html" %}
 
-{% block title %}{{ post.title }} - Neuro Community{% endblock %}
+{% block title %}{{ post.title }}{% endblock %}
 
 {% block content %}
 <div class="container py-5">
     <div class="card post-card">
         <!-- Post Header -->
         <div class="post-header d-flex align-items-center p-3 border-bottom">
-            <img src="{{post.subcommunity_pfp}}" class="avatar me-3" alt="PFP">
+            <img src="{{post.userpfp}}" class="avatar me-3" alt="PFP">
             <div>
-                <div class="username">{{ post.username }}</div>
-                <div class="timestamp">{{ post.created_at }}</div>
+                <a href="#" class="post_link"><div class="username">u/{{ post.username }}</div></a>
+                <div class="timestamp">c/{{ post.subcommunity_name }}   {{ post.created_at }}</div>
             </div>
         </div>
 
