@@ -23,7 +23,7 @@ def create_app():
 
     )
     #make sure uploads are not too big for server 3MB
-    app.config['MAX_CONTENT_LENGTH'] = 3 *1024 * 1024
+    app.config['MAX_CONTENT_LENGTH'] = 3 * 1024 * 1024
     #ensure only image files uploaded
     app.config['UPLOAD_EXTENSIONS'] = ['.jpg', '.png', '.gif','.jpeg']
     db.init_app(app)
