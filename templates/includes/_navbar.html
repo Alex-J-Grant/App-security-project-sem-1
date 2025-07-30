@@ -50,12 +50,12 @@
           <a class="nav-link dropdown-toggle text-white" href="#" role="button" data-bs-toggle="dropdown" aria-expanded="false" style="font-size: 1.1rem;">Your Account</a>
           <ul class="dropdown-menu dropdown-menu-end">
             <li><hr class="dropdown-divider"></li>
-            {% if user_id %}
-            <li><a class="dropdown-item" href="fixme">Profile</a></li>
-            <li><a class="dropdown-item" href="fixme">Logout</a></li>
+            {% if current_user.is_authenticated %}
+            <li><a class="dropdown-item" href="{{ url_for('profile.view') }}">Profile</a></li>
+            <li><a class="dropdown-item" href="{{ url_for('account.logout') }}">Logout</a></li>
             {% else %}
-            <li><a class="dropdown-item" href="fixme">Login</a></li>
-            <li><a class="dropdown-item" href="fixme">Sign Up</a></li>
+            <li><a class="dropdown-item" href="{{ url_for('account.login') }} ">Login</a></li>
+            <li><a class="dropdown-item" href="{{ url_for('account.create') }} ">Sign Up</a></li>
             {% endif %}
             {% if role == 'Admin' %}
             <li><a class="dropdown-item" href="fixme">Admin</a></li>
