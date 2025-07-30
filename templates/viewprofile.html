@@ -1,0 +1,12 @@
+{% extends "base.html" %}
+
+{% block title %}User Profile Dump{% endblock %}
+
+{% block content %}
+<h1>User Profile Data</h1>
+<ul>
+  {% for key, value in vars(user).items() %}
+  <li><strong>{{ key }}:</strong> {{ value }}</li>
+  {% endfor %}
+</ul>
+{% endblock %}
