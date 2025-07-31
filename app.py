@@ -11,6 +11,7 @@ from routes.posts import *
 from routes.community import *
 from routes.acc import *
 from routes.profile import *
+from routes.search import *
 from flask_session import Session
 from flask_wtf.csrf import CSRFProtect
 from flask_talisman import Talisman
@@ -77,6 +78,7 @@ def create_app():
     app.register_blueprint(testbp)
     app.register_blueprint(create_post)
     app.register_blueprint(profile)
+    app.register_blueprint(search_bp)
     register_error_handlers(app)
 
 
