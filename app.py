@@ -14,6 +14,8 @@ from routes.profile import *
 from flask_session import Session
 from flask_wtf.csrf import CSRFProtect
 from flask_talisman import Talisman
+import secrets
+from flask import g
 
 def create_app():
     app =Flask(__name__, static_folder = "static")
@@ -31,7 +33,31 @@ def create_app():
         REMEMBER_COOKIE_SECURE = 'True'
 
     )
-    Talisman(app, force_https = True)
+
+
+    csp = {
+        'script-src': [
+            "'self'",
+            'https://cdn.jsdelivr.net',
+            'https://code.jquery.com',
+            'https://ajax.googleapis.com',
+            "'unsafe-inline'"  # Required for some Bootstrap styles
+
+        ],
+        'style-src': [
+            "'self'",
+            'https://cdn.jsdelivr.net',
+            "'unsafe-inline'"  # Required for some Bootstrap styles
+        ],
+        'font-src': [
+            "'self'",
+            'https://cdn.jsdelivr.net'
+        ],
+        'img-src': [
+            "'self'", 'data:'
+        ]
+    }
+    Talisman(app, force_https = True,content_security_policy=csp)
     login_manager.init_app(app)
     login_manager.login_view = 'account.login'
     @login_manager.user_loader
@@ -40,6 +66,7 @@ def create_app():
     db.init_app(app)
     # Enable CSRF protection
     csrf = CSRFProtect(app)
+
     # register blueprints here for your routes
     app.register_blueprint(account)
     app.register_blueprint(homebp)
@@ -51,6 +78,7 @@ def create_app():
     app.register_blueprint(create_post)
     app.register_blueprint(profile)
     register_error_handlers(app)
+
 
     return app
 

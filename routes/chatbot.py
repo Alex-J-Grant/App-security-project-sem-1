@@ -12,6 +12,7 @@ import markdown
 import bleach
 # from routes import
 from flask_limiter import Limiter
+from flask_login import login_required, current_user
 
 #set max length for inputs
 MAX_LENGTH = 500
@@ -33,8 +34,11 @@ ALLOWED_ATTRIBUTES = {
 chatbot = Blueprint('chatbot', __name__, url_prefix='')
 
 @chatbot.route('/chatbot', methods=['POST'])
+@login_required
+
 def chatbot_route():
     if request.method == 'POST':
+        print("called chatbot")
         # Step 1: Sanitize user input (redundant safety against XSS)
         user_input = request.form['user_input']
         user_input = html.escape(user_input.strip())
