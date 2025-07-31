@@ -6,6 +6,7 @@ import os, uuid, bleach
 from forms.communityforms import CreateCommunityForm
 from extensions import db
 from sqlalchemy import text
+from flask_login import login_required
 
 from helperfuncs.validation import allowed_mime_type, virus_check
 community = Blueprint('community',__name__,url_prefix='/communities')
@@ -89,6 +90,7 @@ def community_route(subreddit_name):
 
 
 @create_community.route("/create_community", methods=["GET", "POST"])
+@login_required
 def create_community_route():
     form = CreateCommunityForm()
     if form.validate_on_submit():
