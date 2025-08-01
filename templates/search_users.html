@@ -1,0 +1,59 @@
+<!-- templates/search_users.html -->
+{% extends "base.html" %}
+
+{% block title %}Search Users{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+    <h2>Search Users</h2>
+
+    <form method="POST" class="mb-4">
+        {{ form.hidden_tag() }}
+        <div class="row">
+            <div class="col-md-8">
+                {{ form.search_term.label(class="form-label") }}
+                {{ form.search_term(class="form-control") }}
+            </div>
+            <div class="col-md-4 d-flex align-items-end">
+                {{ form.submit(class="btn btn-primary") }}
+            </div>
+        </div>
+    </form>
+
+    {% if users %}
+        <div class="row">
+            {% for user in users %}
+                <div class="col-md-6 mb-3">
+                    <div class="card">
+                        <div class="card-body">
+                            <div class="d-flex align-items-center">
+                                <img src="{{ user.userpfp or url_for('static', filename='images/John_Placeholder.png') }}"
+                                     class="rounded-circle me-3" width="50" height="50" alt="Profile">
+                                <div class="flex-grow-1">
+                                    <h5 class="card-title mb-1">{{ user.fname }} {{ user.lname }}</h5>
+                                    <p class="card-text text-muted">@{{ user.username }}</p>
+                                </div>
+                                <div>
+                                    {% if user.friendship_status == 'friends' %}
+                                        <span class="badge bg-success">Friends</span>
+                                        <a href="{{ url_for('friends.chat', friend_id=user.id) }}" class="btn btn-sm btn-outline-primary ms-2">Message</a>
+                                    {% elif user.friendship_status == 'request_sent' %}
+                                        <span class="badge bg-warning">Request Sent</span>
+                                    {% elif user.friendship_status == 'request_received' %}
+                                        <span class="badge bg-info">Request Received</span>
+                                    {% else %}
+                                        <a href="{{ url_for('friends.send_friend_request', user_id=user.id) }}"
+                                           class="btn btn-sm btn-primary">Add Friend</a>
+                                    {% endif %}
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            {% endfor %}
+        </div>
+    {% elif request.method == 'POST' %}
+        <div class="alert alert-info">No users found matching your search.</div>
+    {% endif %}
+</div>
+{% endblock %}

@@ -1,0 +1,43 @@
+<!-- templates/friends_list.html -->
+{% extends "base.html" %}
+
+{% block title %}Friends{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+    <h2>My Friends</h2>
+    
+    {% if friends_data %}
+        <div class="row">
+            {% for friendship, friend in friends_data %}
+                <div class="col-md-6 mb-3">
+                    <div class="card">
+                        <div class="card-body">
+                            <div class="d-flex align-items-center justify-content-between">
+                                <div class="d-flex align-items-center">
+                                    <img src="{{ friend.userpfp or url_for('static', filename='images/John_Placeholder.png') }}" 
+                                         class="rounded-circle me-3" width="50" height="50" alt="Profile">
+                                    <div>
+                                        <h5 class="mb-1">{{ friend.fname }} {{ friend.lname }}</h5>
+                                        <p class="text-muted mb-0">@{{ friend.username }}</p>
+                                        <small class="text-muted">Friends since {{ friendship.CREATED_AT.strftime('%B %Y') }}</small>
+                                    </div>
+                                </div>
+                                <div>
+                                    <a href="{{ url_for('friends.chat', friend_id=friend.id) }}" 
+                                       class="btn btn-primary btn-sm">Message</a>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            {% endfor %}
+        </div>
+    {% else %}
+        <div class="alert alert-info">
+            You don't have any friends yet. 
+            <a href="{{ url_for('friends.search_users') }}" class="alert-link">Search for users to add as friends!</a>
+        </div>
+    {% endif %}
+</div>
+{% endblock %}

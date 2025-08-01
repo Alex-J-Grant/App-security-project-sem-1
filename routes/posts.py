@@ -2,7 +2,7 @@
 import os
 import uuid
 from flask import Blueprint, render_template, request, redirect, flash, url_for, session
-
+from flask_login import login_required,current_user
 from extensions import db
 from wtforms import ValidationError
 from forms.postforms import PostForm

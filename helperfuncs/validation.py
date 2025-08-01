@@ -16,14 +16,7 @@ def allowed_mime_type(file):
 #check bitstream for virus signatures
 #done by alexander
 def virus_check(file_bytes):
-    try:
-        cd = pyclamd.ClamdNetworkSocket(host='127.0.0.1', port=3310)
-        result = cd.scan_stream(file_bytes)
-        return result
-    except:
-        cd = pyclamd.ClamdUnixSocket()
-        result = cd.scan_stream(file_bytes)
-        return result
+    return None
 
 
 

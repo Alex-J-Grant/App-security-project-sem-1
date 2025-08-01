@@ -22,7 +22,7 @@ def create_app():
     app =Flask(__name__, static_folder = "static")
 
     app.config.from_mapping(
-        # need to change key very important 
+        # need to change key very important
         SECRET_KEY="SECRET",
         SQLALCHEMY_DATABASE_URI="mysql+pymysql://developer:temppassword@localhost:3306/app_sec_db",
         SQLALCHEMY_TRACK_MODIFICATIONS=False,
@@ -88,7 +88,6 @@ def create_app():
 if __name__ == '__main__':
     app = create_app()
     app.run(ssl_context=('cert.pem', 'key.pem'))
-
 
 
 
