@@ -1,0 +1,69 @@
+<!-- templates/friend_requests.html -->
+{% extends "base.html" %}
+
+{% block title %}Friend Requests{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+    <h2>Friend Requests</h2>
+    
+    <!-- Pending Requests (Received) -->
+    <div class="mb-5">
+        <h4>Pending Requests</h4>
+        {% if pending_requests %}
+            {% for request in pending_requests %}
+                <div class="card mb-3">
+                    <div class="card-body">
+                        <div class="d-flex align-items-center justify-content-between">
+                            <div class="d-flex align-items-center">
+                                <img src="{{ request.sender.userpfp or url_for('static', filename='images/John_Placeholder.png') }}" 
+                                     class="rounded-circle me-3" width="50" height="50" alt="Profile">
+                                <div>
+                                    <h5 class="mb-1">{{ request.sender.fname }} {{ request.sender.lname }}</h5>
+                                    <p class="text-muted mb-0">@{{ request.sender.username }}</p>
+                                    <small class="text-muted">{{ request.CREATED_AT.strftime('%B %d, %Y at %I:%M %p') }}</small>
+                                </div>
+                            </div>
+                            <div>
+                                <a href="{{ url_for('friends.respond_request', request_id=request.ID, action='accept') }}" 
+                                   class="btn btn-success btn-sm me-2">Accept</a>
+                                <a href="{{ url_for('friends.respond_request', request_id=request.ID, action='reject') }}" 
+                                   class="btn btn-danger btn-sm">Reject</a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            {% endfor %}
+        {% else %}
+            <div class="alert alert-info">No pending friend requests.</div>
+        {% endif %}
+    </div>
+    
+    <!-- Sent Requests -->
+    <div>
+        <h4>Sent Requests</h4>
+        {% if sent_requests %}
+            {% for request in sent_requests %}
+                <div class="card mb-3">
+                    <div class="card-body">
+                        <div class="d-flex align-items-center justify-content-between">
+                            <div class="d-flex align-items-center">
+                                <img src="{{ request.receiver.userpfp or url_for('static', filename='images/John_Placeholder.png') }}" 
+                                     class="rounded-circle me-3" width="50" height="50" alt="Profile">
+                                <div>
+                                    <h5 class="mb-1">{{ request.receiver.fname }} {{ request.receiver.lname }}</h5>
+                                    <p class="text-muted mb-0">@{{ request.receiver.username }}</p>
+                                    <small class="text-muted">{{ request.CREATED_AT.strftime('%B %d, %Y at %I:%M %p') }}</small>
+                                </div>
+                            </div>
+                            <span class="badge bg-warning">Pending</span>
+                        </div>
+                    </div>
+                </div>
+            {% endfor %}
+        {% else %}
+            <div class="alert alert-info">No sent requests.</div>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}

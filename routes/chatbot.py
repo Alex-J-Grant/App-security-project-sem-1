@@ -15,7 +15,7 @@ from flask_limiter import Limiter
 from flask_login import login_required, current_user
 
 #set max length for inputs
-MAX_LENGTH = 500
+MAX_LENGTH = 255
 
 genai.configure(api_key=os.getenv("GOOGLE_API_KEY"))
 
@@ -34,9 +34,9 @@ ALLOWED_ATTRIBUTES = {
 chatbot = Blueprint('chatbot', __name__, url_prefix='')
 
 @chatbot.route('/chatbot', methods=['POST'])
-@login_required
-
 def chatbot_route():
+    if not current_user.is_authenticated:
+        return jsonify({'response': 'Sorry please sign in first to use the chatbot.'})
     if request.method == 'POST':
         print("called chatbot")
         # Step 1: Sanitize user input (redundant safety against XSS)

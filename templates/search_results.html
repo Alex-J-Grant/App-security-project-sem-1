@@ -1,0 +1,53 @@
+{% extends "base.html" %}
+{% block title %}Search: {{ query }}{% endblock %}
+{% block content %}
+<div class="container py-4">
+    <h3>Results for "{{ query }}"</h3>
+
+    <div class="row mt-3">
+        <div class="col-md-6">
+            <h5>Communities</h5>
+            {% if communities %}
+            {% for c in communities %}
+            <a class="h6 mb-0 post_link" href="/communities/{{ c.NAME|urlencode }}">
+                <div class="card mb-2">
+                    <div class="d-flex align-items-center p-2">
+                        <img src="static/images/profile_pictures/{{ c.COMM_PFP }}" alt="pfp" class="rounded-circle me-2"
+                             onerror="this.onerror=null; this.src='/static/images/SC_logo.png';"
+                             style="width:40px;height:40px;object-fit:cover;">
+                        <div>
+                            c/{{ c.NAME }}
+                        </div>
+                    </div>
+                </div>
+            </a>
+            {% endfor %}
+            {% else %}
+            <p>No communities found.</p>
+            {% endif %}
+        </div>
+
+        <div class="col-md-6">
+            <h5>Users</h5>
+            {% if users %}
+            {% for u in users %}
+            <a class="h6 mb-0 post_link" href="/users/{{ u.USERNAME|urlencode }}">
+                <div class="card mb-2">
+                    <div class="d-flex align-items-center p-2">
+                        <img src="static/images/profile_pictures/{{ u.USERPFP }}" alt="pfp" class="rounded-circle me-2"
+                             style="width:40px;height:40px;object-fit:cover;"
+                             onerror="this.onerror=null; this.src='/static/images/default_pfp.jpg';">
+                        <div>
+                            u/{{ u.USERNAME }}
+                        </div>
+                    </div>
+                </div>
+            </a>
+            {% endfor %}
+            {% else %}
+            <p>No users found.</p>
+            {% endif %}
+        </div>
+    </div>
+</div>
+{% endblock %}

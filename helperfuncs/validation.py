@@ -23,7 +23,7 @@ def virus_check(file_bytes):
     except:
         cd = pyclamd.ClamdUnixSocket()
         result = cd.scan_stream(file_bytes)
-        return result
+    return result
 
 
 

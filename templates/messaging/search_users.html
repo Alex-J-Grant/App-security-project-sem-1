@@ -1,0 +1,278 @@
+<!-- templates/search_users.html -->
+{% extends "base.html" %}
+
+{% block title %}Search Users{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+    <h2>Search Users</h2>
+
+    <form method="POST" class="mb-4">
+        {{ form.hidden_tag() }}
+        <div class="row">
+            <div class="col-md-8">
+                {{ form.search_term.label(class="form-label") }}
+                {{ form.search_term(class="form-control") }}
+            </div>
+            <div class="col-md-4 d-flex align-items-end">
+                {{ form.submit(class="btn btn-primary") }}
+            </div>
+        </div>
+    </form>
+
+    {% if users %}
+        <div class="row">
+            {% for user in users %}
+                <div class="col-md-6 mb-3">
+                    <div class="card">
+                        <div class="card-body">
+                            <div class="d-flex align-items-center">
+                                <img src="{{ user.userpfp or url_for('static', filename='images/John_Placeholder.png') }}"
+                                     class="rounded-circle me-3" width="50" height="50" alt="Profile">
+                                <div class="flex-grow-1">
+                                    <h5 class="card-title mb-1">{{ user.fname }} {{ user.lname }}</h5>
+                                    <p class="card-text text-muted">@{{ user.username }}</p>
+                                </div>
+                                <div>
+                                    {% if user.friendship_status == 'friends' %}
+                                        <span class="badge bg-success">Friends</span>
+                                        <a href="{{ url_for('friends.chat', friend_id=user.id) }}" class="btn btn-sm btn-outline-primary ms-2">Message</a>
+                                    {% elif user.friendship_status == 'request_sent' %}
+                                        <span class="badge bg-warning">Request Sent</span>
+                                    {% elif user.friendship_status == 'request_received' %}
+                                        <span class="badge bg-info">Request Received</span>
+                                    {% else %}
+                                        <a href="{{ url_for('friends.send_friend_request', user_id=user.id) }}"
+                                           class="btn btn-sm btn-primary">Add Friend</a>
+                                    {% endif %}
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            {% endfor %}
+        </div>
+    {% elif request.method == 'POST' %}
+        <div class="alert alert-info">No users found matching your search.</div>
+    {% endif %}
+</div>
+{% endblock %}
+
+<!-- templates/friend_requests.html -->
+{% extends "base.html" %}
+
+{% block title %}Friend Requests{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+    <h2>Friend Requests</h2>
+
+    <!-- Pending Requests (Received) -->
+    <div class="mb-5">
+        <h4>Pending Requests</h4>
+        {% if pending_requests %}
+            {% for request in pending_requests %}
+                <div class="card mb-3">
+                    <div class="card-body">
+                        <div class="d-flex align-items-center justify-content-between">
+                            <div class="d-flex align-items-center">
+                                <img src="{{ request.sender.userpfp or url_for('static', filename='images/John_Placeholder.png') }}"
+                                     class="rounded-circle me-3" width="50" height="50" alt="Profile">
+                                <div>
+                                    <h5 class="mb-1">{{ request.sender.fname }} {{ request.sender.lname }}</h5>
+                                    <p class="text-muted mb-0">@{{ request.sender.username }}</p>
+                                    <small class="text-muted">{{ request.CREATED_AT.strftime('%B %d, %Y at %I:%M %p') }}</small>
+                                </div>
+                            </div>
+                            <div>
+                                <a href="{{ url_for('friends.respond_request', request_id=request.ID, action='accept') }}"
+                                   class="btn btn-success btn-sm me-2">Accept</a>
+                                <a href="{{ url_for('friends.respond_request', request_id=request.ID, action='reject') }}"
+                                   class="btn btn-danger btn-sm">Reject</a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            {% endfor %}
+        {% else %}
+            <div class="alert alert-info">No pending friend requests.</div>
+        {% endif %}
+    </div>
+
+    <!-- Sent Requests -->
+    <div>
+        <h4>Sent Requests</h4>
+        {% if sent_requests %}
+            {% for request in sent_requests %}
+                <div class="card mb-3">
+                    <div class="card-body">
+                        <div class="d-flex align-items-center justify-content-between">
+                            <div class="d-flex align-items-center">
+                                <img src="{{ request.receiver.userpfp or url_for('static', filename='images/John_Placeholder.png') }}"
+                                     class="rounded-circle me-3" width="50" height="50" alt="Profile">
+                                <div>
+                                    <h5 class="mb-1">{{ request.receiver.fname }} {{ request.receiver.lname }}</h5>
+                                    <p class="text-muted mb-0">@{{ request.receiver.username }}</p>
+                                    <small class="text-muted">{{ request.CREATED_AT.strftime('%B %d, %Y at %I:%M %p') }}</small>
+                                </div>
+                            </div>
+                            <span class="badge bg-warning">Pending</span>
+                        </div>
+                    </div>
+                </div>
+            {% endfor %}
+        {% else %}
+            <div class="alert alert-info">No sent requests.</div>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}
+
+<!-- templates/friends_list.html -->
+{% extends "base.html" %}
+
+{% block title %}Friends{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+    <h2>My Friends</h2>
+
+    {% if friends_data %}
+        <div class="row">
+            {% for friendship, friend in friends_data %}
+                <div class="col-md-6 mb-3">
+                    <div class="card">
+                        <div class="card-body">
+                            <div class="d-flex align-items-center justify-content-between">
+                                <div class="d-flex align-items-center">
+                                    <img src="{{ friend.userpfp or url_for('static', filename='images/John_Placeholder.png') }}"
+                                         class="rounded-circle me-3" width="50" height="50" alt="Profile">
+                                    <div>
+                                        <h5 class="mb-1">{{ friend.fname }} {{ friend.lname }}</h5>
+                                        <p class="text-muted mb-0">@{{ friend.username }}</p>
+                                        <small class="text-muted">Friends since {{ friendship.CREATED_AT.strftime('%B %Y') }}</small>
+                                    </div>
+                                </div>
+                                <div>
+                                    <a href="{{ url_for('friends.chat', friend_id=friend.id) }}"
+                                       class="btn btn-primary btn-sm">Message</a>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            {% endfor %}
+        </div>
+    {% else %}
+        <div class="alert alert-info">
+            You don't have any friends yet.
+            <a href="{{ url_for('friends.search_users') }}" class="alert-link">Search for users to add as friends!</a>
+        </div>
+    {% endif %}
+</div>
+{% endblock %}
+
+<!-- templates/messages_overview.html -->
+{% extends "base.html" %}
+
+{% block title %}Messages{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+    <h2>Messages</h2>
+
+    {% if conversations %}
+        {% for partner_id, conv in conversations.items() %}
+            <div class="card mb-3">
+                <div class="card-body">
+                    <div class="d-flex align-items-center justify-content-between">
+                        <div class="d-flex align-items-center">
+                            <img src="{{ conv.partner.userpfp or url_for('static', filename='images/John_Placeholder.png') }}"
+                                 class="rounded-circle me-3" width="50" height="50" alt="Profile">
+                            <div>
+                                <h5 class="mb-1">{{ conv.partner.fname }} {{ conv.partner.lname }}</h5>
+                                <p class="text-muted mb-0">{{ conv.last_message.CONTENT[:50] }}...</p>
+                                <small class="text-muted">{{ conv.last_message.CREATED_AT.strftime('%B %d at %I:%M %p') }}</small>
+                            </div>
+                        </div>
+                        <div class="text-end">
+                            {% if conv.unread_count > 0 %}
+                                <span class="badge bg-danger mb-2">{{ conv.unread_count }} unread</span><br>
+                            {% endif %}
+                            <a href="{{ url_for('friends.chat', friend_id=partner_id) }}"
+                               class="btn btn-primary btn-sm">Open Chat</a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        {% endfor %}
+    {% else %}
+        <div class="alert alert-info">
+            No messages yet. Start a conversation with your
+            <a href="{{ url_for('friends.friends_list') }}" class="alert-link">friends</a>!
+        </div>
+    {% endif %}
+</div>
+{% endblock %}
+
+<!-- templates/chat.html -->
+{% extends "base.html" %}
+
+{% block title %}Chat with {{ friend.fname }}{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+    <div class="row justify-content-center">
+        <div class="col-md-8">
+            <!-- Chat Header -->
+            <div class="card">
+                <div class="card-header bg-primary text-white">
+                    <div class="d-flex align-items-center">
+                        <img src="{{ friend.userpfp or url_for('static', filename='images/John_Placeholder.png') }}"
+                             class="rounded-circle me-3" width="40" height="40" alt="Profile">
+                        <h5 class="mb-0">{{ friend.fname }} {{ friend.lname }}</h5>
+                    </div>
+                </div>
+
+                <!-- Messages -->
+                <div class="card-body" style="height: 400px; overflow-y: auto;" id="messages-container">
+                    {% for message in messages %}
+                        <div class="mb-3 {% if message.SENDER_ID == current_user.USER_ID %}text-end{% endif %}">
+                            <div class="d-inline-block p-2 rounded {% if message.SENDER_ID == current_user.USER_ID %}bg-primary text-white{% else %}bg-light{% endif %}"
+                                 style="max-width: 70%;">
+                                {{ message.CONTENT }}
+                            </div>
+                            <div class="small text-muted mt-1">
+                                {{ message.CREATED_AT.strftime('%I:%M %p') }}
+                                {% if message.SENDER_ID == current_user.USER_ID and message.IS_READ %}
+                                    <i class="fas fa-check text-success"></i>
+                                {% endif %}
+                            </div>
+                        </div>
+                    {% endfor %}
+                </div>
+
+                <!-- Message Input -->
+                <div class="card-footer">
+                    <form method="POST" action="{{ url_for('friends.send_message') }}">
+                        {{ form.hidden_tag() }}
+                        {{ form.friend_id }}
+                        <div class="input-group">
+                            {{ form.content(class="form-control", placeholder="Type your message...") }}
+                            {{ form.submit(class="btn btn-primary") }}
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+// Auto-scroll to bottom of messages
+document.addEventListener('DOMContentLoaded', function() {
+    const container = document.getElementById('messages-container');
+    container.scrollTop = container.scrollHeight;
+});
+</script>
+{% endblock %}

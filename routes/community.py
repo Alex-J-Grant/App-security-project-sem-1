@@ -6,6 +6,7 @@ import os, uuid, bleach
 from forms.communityforms import CreateCommunityForm
 from extensions import db
 from sqlalchemy import text
+from flask_login import login_required
 
 from helperfuncs.validation import allowed_mime_type, virus_check
 community = Blueprint('community',__name__,url_prefix='/communities')
@@ -74,7 +75,7 @@ def community_route(subreddit_name):
             'description': row.DESCRIPT,
             'image_url':  url_for('static', filename=f'images/post_images/{row.image_url}') if row.image_url else None,
             'username': row.username,
-            'user_pfp': row.user_pfp if row.user_pfp else "/static/images/2903-default-blue.jpg",
+            'user_pfp': row.user_pfp if row.user_pfp else "/static/images/default_pfp.jpg",
             'subcommunity_pfp': url_for('static', filename=f'images/profile_pictures/{row.subcommunity_pfp}') if row.subcommunity_pfp else '/static/images/SC_logo.png',
             'created_at': row.created_at.strftime('%Y-%m-%d %H:%M:%S'),
             'likes': row.likes,
@@ -89,6 +90,7 @@ def community_route(subreddit_name):
 
 
 @create_community.route("/create_community", methods=["GET", "POST"])
+@login_required
 def create_community_route():
     form = CreateCommunityForm()
     if form.validate_on_submit():
