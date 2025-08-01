@@ -22,3 +22,5 @@ class SearchUserForm(FlaskForm):
     search_term = StringField('Search Users', validators=[DataRequired(), Length(min=1, max=50)],
                              render_kw={"placeholder": "Search by username or name..."})
     submit = SubmitField('Search')
+
+    #hi
