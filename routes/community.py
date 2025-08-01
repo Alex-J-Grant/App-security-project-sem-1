@@ -75,7 +75,7 @@ def community_route(subreddit_name):
             'description': row.DESCRIPT,
             'image_url':  url_for('static', filename=f'images/post_images/{row.image_url}') if row.image_url else None,
             'username': row.username,
-            'user_pfp': row.user_pfp if row.user_pfp else "/static/images/2903-default-blue.jpg",
+            'user_pfp': row.user_pfp if row.user_pfp else "/static/images/default_pfp.jpg",
             'subcommunity_pfp': url_for('static', filename=f'images/profile_pictures/{row.subcommunity_pfp}') if row.subcommunity_pfp else '/static/images/SC_logo.png',
             'created_at': row.created_at.strftime('%Y-%m-%d %H:%M:%S'),
             'likes': row.likes,

@@ -1,56 +1,55 @@
 <footer style="background-color: #336b87;" class="footer custom-darker-blue-bg mt-auto">
     <div class="container-fluid  text-white py-5">
-    <div class="row">
-        <div class="col-sm-3">
-            <h3 class="text-white mb-4">Account</h3>
-            <ul class="list-unstyled" >
-                <li ><a style="color:#DDD;" href="/user/profile" class=" hover-link">Your Account</a></li>
-                <li><a style="color:#DDD;" href="/user/profile/edit" class=" hover-link">Edit Account</a></li>
-                <li><a  style="color:#DDD;" href="/yourOrders" class=" hover-link">Your Orders</a></li>
-            </ul>
-        </div>
-        <div class="col-sm-3">
-            <h3 class="text-white  mb-4">Socials</h3>
-            <ul class="list-unstyled">
-                <li><a style="color:#DDD;" href="https://x.com/?mx=2" class=" hover-link">Twitter</a></li>
-                <li><a style="color:#DDD;" href="https://www.instagram.com/" class=" hover-link">Instagram</a></li>
-                <li><a style="color:#DDD;" href="https://www.facebook.com/" class=" hover-link">Facebook</a></li>
-            </ul>
-        </div>
-        <div class="col-sm-3">
-            <h3 class="text-white  mb-4">Support</h3>
-            <ul class="list-unstyled">
+        <div class="row">
+            <div class="col-sm-3">
+                <h3 class="text-white mb-4">Account</h3>
+                <ul class="list-unstyled">
+                    <li><a style="color:#DDD;" href="/user/profile" class=" hover-link">Your Account</a></li>
+                    <li><a style="color:#DDD;" href="/user/profile/edit" class=" hover-link">Edit Account</a></li>
+                    <li><a style="color:#DDD;" href="/yourOrders" class=" hover-link">Your Orders</a></li>
+                </ul>
+            </div>
+            <div class="col-sm-3">
+                <h3 class="text-white  mb-4">Socials</h3>
+                <ul class="list-unstyled">
+                    <li><a style="color:#DDD;" href="https://x.com/?mx=2" class=" hover-link">Twitter</a></li>
+                    <li><a style="color:#DDD;" href="https://www.instagram.com/" class=" hover-link">Instagram</a></li>
+                    <li><a style="color:#DDD;" href="https://www.facebook.com/" class=" hover-link">Facebook</a></li>
+                </ul>
+            </div>
+            <div class="col-sm-3">
+                <h3 class="text-white  mb-4">Support</h3>
+                <ul class="list-unstyled">
 
-                <li><a style="color:#DDD;" href="/contact/add" class=" hover-link">Contact us</a></li>
-                <li><a style="color:#DDD;" href="/faq" class=" hover-link">FAQ</a></li>
-            </ul>
+                    <li><a style="color:#DDD;" href="/contact/add" class=" hover-link">Contact us</a></li>
+                    <li><a style="color:#DDD;" href="/faq" class=" hover-link">FAQ</a></li>
+                </ul>
+            </div>
         </div>
     </div>
-</div>
     <a class="rounded-circle d-flex align-items-center justify-content-center" id="chatbot-button"><img
             style="max-height: 50px;" src="{{ url_for('static', filename='images/John_Placeholder.png') }}"></a>
     <div class="input-group mb-3  " id="chatboxer">
 
-        <div id="top-chat" style="position: sticky;top: 0px;opacity: 0.95;" class=" d-flex align-items-center"><h3>Neuro</h3><a id="x"><img class="img-fluid"
-                                                                                           style="max-height: 20px;"
-                                                                                           src="{{ url_for('static', filename='images/close.png') }}"></a>
+        <div id="top-chat" style="position: sticky;top: 0px;opacity: 0.95;" class=" d-flex align-items-center"><h3>
+            Neuro</h3><a id="x"><img class="img-fluid"
+                                     style="max-height: 20px;"
+                                     src="{{ url_for('static', filename='images/close.png') }}"></a>
         </div>
         <div id="chatbox"></div>
         <div class="chatbox-texting ">
             <div style="display:flex;position: absolute;">
                 <input type="text" class="form-control " placeholder="How can i help you?"
                        aria-label="User-prompt" aria-describedby="button-addon2" id="user_input"
-                       >
+                >
                 <button id="chatbot-enter" class="btn btn-info rounded-end" type="button">Send</button>
-           </div>
+            </div>
         </div>
     </div>
     <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/dompurify@2.4.0/dist/purify.min.js"></script>
     <meta name="csrf-token" content="{{ csrf_token() }}">
-    <script type="module" src="{{ url_for('static', filename='javascript/chatbot.js') }}">
+    <script type="module" src="{{ url_for('static', filename='javascript/chatbot.js') }}"></script>
 
 
-
-
-</footer>
+        </footer>

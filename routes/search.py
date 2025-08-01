@@ -62,13 +62,13 @@ def search_suggestions():
     users_out = [{
         "id": u["USER_ID"],
         "username": u["USERNAME"],
-        "pfp": "/static/images/profile_pictures/" + u["USERPFP"] if u["USERPFP"] else "/static/images/SC_logo.png"
+        "pfp": "/static/images/profile_pictures/" + u["USERPFP"] if u["USERPFP"] else "/static/images/default_pfp.jpg"
     } for u in users]
 
     communities_out = [{
         "id": c["ID"],
         "name": c["NAME"],
-        "pfp": "/static/images/profile_pictures/" + c["COMM_PFP"] if c["COMM_PFP"] else "/static/images/default_pfp.jpg"
+        "pfp": "/static/images/profile_pictures/" + c["COMM_PFP"] if c["COMM_PFP"] else "/static/images/SC_logo.png"
     } for c in communities]
 
     return jsonify({"users": users_out, "communities": communities_out})
