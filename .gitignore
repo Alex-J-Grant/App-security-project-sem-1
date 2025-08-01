@@ -5,3 +5,4 @@ __pycache/
 weifengtodo.txt
 *.pem
 logs
+.idea
