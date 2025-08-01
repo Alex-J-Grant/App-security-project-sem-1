@@ -3,16 +3,13 @@
 -- If you do not know how to use this script, please go to chatgpt. Thank you.
 -- user = developer
 -- password = temppassword
-
 -- Deleting existing schema if applicable
 Drop database if exists `app_sec_db`;
 Drop user if exists 'developer';
-
 CREATE SCHEMA `app_sec_db`;
 USE app_sec_db;
 create user 'developer' identified by 'temppassword';
 GRANT SELECT, INSERT, UPDATE, DELETE on app_sec_db.* to developer;
-
 CREATE TABLE app_sec_db.USERS(
     USER_ID VARCHAR(50) primary key,
     USERNAME VARCHAR(20) NOT NULL UNIQUE,
@@ -32,7 +29,6 @@ CREATE TABLE app_sec_db.USERS(
     ROLE ENUM('Admin', 'User') DEFAULT 'User' NOT NULL,
     SETTINGS JSON
   );
-
 CREATE TABLE app_sec_db.SUBCOMMUNITY(
   ID VARCHAR(50) primary key,
   NAME VARCHAR(30) NOT NULL UNIQUE,
@@ -42,7 +38,6 @@ CREATE TABLE app_sec_db.SUBCOMMUNITY(
   BANNER_IMAGE VARCHAR(255) NOT NULL,
   TAG VARCHAR(255) NOT NULL
 );
-
 CREATE TABLE app_sec_db.POST(
   POST_ID VARCHAR(50) primary key,
   USER_ID VARCHAR(50) NOT NULL,
@@ -50,15 +45,14 @@ CREATE TABLE app_sec_db.POST(
   TITLE VARCHAR(255) NOT NULL,
   IMAGE VARCHAR(255),
   DESCRIPT VARCHAR(225),
-  LIKE_COUNT INT DEFAULT 0, 
+  LIKE_COUNT INT DEFAULT 0,
   COMMENT_COUNT INT DEFAULT 0,
   created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
   FOREIGN KEY (USER_ID) REFERENCES USERS(USER_ID),
   FOREIGN KEY (COMM_ID) REFERENCES SUBCOMMUNITY(ID)
 );
-
 CREATE TABLE app_sec_db.FRIEND_REQ(
-  ID INT primary key,
+  ID INT AUTO_INCREMENT primary key,
   SENDER_ID VARCHAR(50) NOT NULL,
   RECV_ID VARCHAR(50) NOT NULL,
   STATUS ENUM('pending', 'accepted', 'rejected') DEFAULT 'pending',
@@ -66,7 +60,6 @@ CREATE TABLE app_sec_db.FRIEND_REQ(
   FOREIGN KEY (SENDER_ID) REFERENCES USERS(USER_ID),
   FOREIGN KEY (RECV_ID) REFERENCES USERS(USER_ID)
 );
-
 CREATE TABLE app_sec_db.MESSAGES(
   ID VARCHAR(50) primary key,
   SENDER_ID VARCHAR(50) NOT NULL,
@@ -77,7 +70,6 @@ CREATE TABLE app_sec_db.MESSAGES(
   FOREIGN KEY (SENDER_ID) REFERENCES USERS(USER_ID),
   FOREIGN KEY (RECV_ID) REFERENCES USERS(USER_ID)
 );
-
 CREATE TABLE app_sec_db.FRIENDS(
   USER_ID varchar(50) NOT NULL,
   FRIEND_ID varchar(50) NOT NULL,
@@ -86,5 +78,3 @@ CREATE TABLE app_sec_db.FRIENDS(
   FOREIGN KEY (USER_ID) REFERENCES USERS(USER_ID),
   FOREIGN KEY (FRIEND_ID) REFERENCES USERS(USER_ID)
 );
-
-

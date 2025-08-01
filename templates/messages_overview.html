@@ -1,0 +1,42 @@
+<!-- templates/messages_overview.html -->
+{% extends "base.html" %}
+
+{% block title %}Messages{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+    <h2>Messages</h2>
+    
+    {% if conversations %}
+        {% for partner_id, conv in conversations.items() %}
+            <div class="card mb-3">
+                <div class="card-body">
+                    <div class="d-flex align-items-center justify-content-between">
+                        <div class="d-flex align-items-center">
+                            <img src="{{ conv.partner.userpfp or url_for('static', filename='images/John_Placeholder.png') }}" 
+                                 class="rounded-circle me-3" width="50" height="50" alt="Profile">
+                            <div>
+                                <h5 class="mb-1">{{ conv.partner.fname }} {{ conv.partner.lname }}</h5>
+                                <p class="text-muted mb-0">{{ conv.last_message.CONTENT[:50] }}...</p>
+                                <small class="text-muted">{{ conv.last_message.CREATED_AT.strftime('%B %d at %I:%M %p') }}</small>
+                            </div>
+                        </div>
+                        <div class="text-end">
+                            {% if conv.unread_count > 0 %}
+                                <span class="badge bg-danger mb-2">{{ conv.unread_count }} unread</span><br>
+                            {% endif %}
+                            <a href="{{ url_for('friends.chat', friend_id=partner_id) }}" 
+                               class="btn btn-primary btn-sm">Open Chat</a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        {% endfor %}
+    {% else %}
+        <div class="alert alert-info">
+            No messages yet. Start a conversation with your 
+            <a href="{{ url_for('friends.friends_list') }}" class="alert-link">friends</a>!
+        </div>
+    {% endif %}
+</div>
+{% endblock %>

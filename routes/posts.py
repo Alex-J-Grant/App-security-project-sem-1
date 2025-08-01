@@ -2,7 +2,7 @@
 import os
 import uuid
 from flask import Blueprint, render_template, request, redirect, flash, url_for, session
-
+from flask_login import login_required,current_user
 from extensions import db
 from wtforms import ValidationError
 from forms.postforms import PostForm
@@ -60,6 +60,7 @@ def view_post_route(post_id):
 
 
 @create_post.route('/upload_post', methods=['GET', 'POST'])
+@login_required
 def upload_post():
     form = PostForm()
     with db.engine.connect() as conn:
@@ -67,6 +68,7 @@ def upload_post():
         form.community.choices = [(row[0], row[1]) for row in result]
 
     if form.validate_on_submit():
+        userid = current_user.id
         title = bleach.clean(form.title.data.strip(), tags=[], strip=True)
         description = bleach.clean(form.description.data.strip(), tags=[], strip=True)
         comm_id = bleach.clean(form.community.data.strip(), tags=[], strip=True)
@@ -110,7 +112,7 @@ def upload_post():
             with db.engine.connect() as conn:
                 conn.execute(stmt, {
                     "post_id": str(uuid.uuid4()),
-                    "user_id": 'u001',
+                    "user_id": userid,
                     "comm_id": comm_id ,
                     "title": title,
                     "image": filename,

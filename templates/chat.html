@@ -1,0 +1,210 @@
+<!-- templates/chat.html -->
+{% extends "base.html" %}
+
+{% block title %}Chat with {{ friend.fname }}{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+    <div class="row justify-content-center">
+        <div class="col-md-8">
+            <!-- Chat Header -->
+            <div class="card">
+                <div class="card-header bg-primary text-white">
+                    <div class="d-flex align-items-center justify-content-between">
+                        <div class="d-flex align-items-center">
+                            <img src="{{ friend.userpfp or url_for('static', filename='images/John_Placeholder.png') }}"
+                                 class="rounded-circle me-3" width="40" height="40" alt="Profile">
+                            <h5 class="mb-0">{{ friend.fname }} {{ friend.lname }}</h5>
+                        </div>
+                        <div>
+                            <span class="badge bg-light text-dark" id="status-indicator">Online</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Messages -->
+                <div class="card-body" style="height: 400px; overflow-y: auto;" id="messages-container">
+                    <!-- Messages will be loaded here -->
+                </div>
+
+                <!-- Typing Indicator -->
+                <div id="typing-indicator" class="px-3 py-1 text-muted small" style="display: none;">
+                    <em>{{ friend.fname }} is typing...</em>
+                </div>
+
+                <!-- Message Input -->
+                <div class="card-footer">
+                    <form id="message-form">
+                        {{ form.hidden_tag() }}
+                        {{ form.friend_id }}
+                        <div class="input-group">
+                            {{ form.content(class="form-control", placeholder="Type your message...", id="message-input") }}
+                            {{ form.submit(class="btn btn-primary", id="send-btn") }}
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+// Real-time chat functionality
+let lastMessageTime = '';
+let isTyping = false;
+let typingTimeout;
+const friendId = '{{ friend.id }}';
+const currentUserId = '{{ current_user.id }}';
+
+// Auto-scroll to bottom of messages
+function scrollToBottom() {
+    const container = document.getElementById('messages-container');
+    container.scrollTop = container.scrollHeight;
+}
+
+// Format message HTML
+function formatMessage(message) {
+    const isOwnMessage = message.sender_id === currentUserId;
+    const messageClass = isOwnMessage ? 'text-end' : '';
+    const bubbleClass = isOwnMessage ? 'bg-primary text-white' : 'bg-light';
+    const time = new Date(message.created_at).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'});
+
+    return `
+        <div class="mb-3 ${messageClass}" data-message-id="${message.id}">
+            <div class="d-inline-block p-2 rounded ${bubbleClass}" style="max-width: 70%;">
+                ${escapeHtml(message.content)}
+            </div>
+            <div class="small text-muted mt-1">
+                ${time}
+                ${isOwnMessage && message.is_read ? '<i class="fas fa-check text-success"></i>' : ''}
+            </div>
+        </div>
+    `;
+}
+
+// Escape HTML to prevent XSS
+function escapeHtml(text) {
+    const div = document.createElement('div');
+    div.textContent = text;
+    return div.innerHTML;
+}
+
+// Load messages from server
+function loadMessages() {
+    fetch(`/friends/api/messages/${friendId}`)
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                const container = document.getElementById('messages-container');
+                const currentScroll = container.scrollTop;
+                const shouldAutoScroll = currentScroll >= container.scrollHeight - container.offsetHeight - 50;
+
+                // Clear and rebuild messages
+                container.innerHTML = '';
+                data.messages.forEach(message => {
+                    container.innerHTML += formatMessage(message);
+                    lastMessageTime = message.created_at;
+                });
+
+                // Auto-scroll if user was at bottom
+                if (shouldAutoScroll) {
+                    scrollToBottom();
+                }
+            }
+        })
+        .catch(error => console.error('Error loading messages:', error));
+}
+
+// Check for new messages
+function checkNewMessages() {
+    fetch(`/friends/api/messages/${friendId}?since_time=${lastMessageTime}`)
+        .then(response => response.json())
+        .then(data => {
+            if (data.success && data.messages.length > 0) {
+                const container = document.getElementById('messages-container');
+                data.messages.forEach(message => {
+                    // Check if message already exists
+                    if (!document.querySelector(`[data-message-id="${message.id}"]`)) {
+                        container.innerHTML += formatMessage(message);
+                        lastMessageTime = message.created_at;
+                    }
+                });
+                scrollToBottom();
+            }
+        })
+        .catch(error => console.error('Error checking messages:', error));
+}
+
+// Send message
+function sendMessage(event) {
+    event.preventDefault();
+
+    const form = document.getElementById('message-form');
+    const messageInput = document.getElementById('message-input');
+    const content = messageInput.value.trim();
+
+    if (!content) return;
+
+    const formData = new FormData(form);
+
+    fetch('/friends/send_message', {
+        method: 'POST',
+        body: formData
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            messageInput.value = '';
+            // Don't reload all messages, just check for new ones
+            setTimeout(checkNewMessages, 500); // Small delay to ensure message is saved
+        } else {
+            alert('Failed to send message: ' + (data.error || 'Unknown error'));
+        }
+    })
+    .catch(error => {
+        console.error('Error sending message:', error);
+        alert('Failed to send message');
+    });
+}
+
+// Typing indicator
+function handleTyping() {
+    if (!isTyping) {
+        isTyping = true;
+        // Send typing indicator to server (optional)
+    }
+
+    clearTimeout(typingTimeout);
+    typingTimeout = setTimeout(() => {
+        isTyping = false;
+        // Send stop typing to server (optional)
+    }, 1000);
+}
+
+// Initialize chat
+document.addEventListener('DOMContentLoaded', function() {
+    // Load initial messages
+    loadMessages();
+
+    // Set up form submission
+    document.getElementById('message-form').addEventListener('submit', sendMessage);
+
+    // Set up typing indicator
+    document.getElementById('message-input').addEventListener('input', handleTyping);
+
+    // Check for new messages every 2 seconds
+    setInterval(checkNewMessages, 2000);
+
+    // Focus message input
+    document.getElementById('message-input').focus();
+
+    // Enable Enter key to send
+    document.getElementById('message-input').addEventListener('keypress', function(e) {
+        if (e.key === 'Enter' && !e.shiftKey) {
+            e.preventDefault();
+            sendMessage(e);
+        }
+    });
+});
+</script>
+{% endblock %}

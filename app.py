@@ -1,39 +1,36 @@
 from flask import Flask
-from extensions import db
 from extensions import login_manager
 from routes.test import testbp
 from helperfuncs.error_handling import register_error_handlers
-from flask_limiter import Limiter
-from flask_limiter.util import get_remote_address
 from routes.home import homebp
 from routes.chatbot import chatbot
 from routes.posts import *
 from routes.community import *
 from routes.acc import *
 from routes.profile import *
-from flask_session import Session
+from routes.friends import friends  # ADD THIS LINE
 from flask_wtf.csrf import CSRFProtect
 from flask_talisman import Talisman
-import secrets
-from flask import g
+from models.user import User  # ADD THIS LINE
+from security.friends_owasp_security import initialize_friends_security
+
+
 
 def create_app():
-    app =Flask(__name__, static_folder = "static")
+    app = Flask(__name__, static_folder="static")
 
     app.config.from_mapping(
-        # need to change key very important 
+        # need to change key very important
         SECRET_KEY="SECRET",
         SQLALCHEMY_DATABASE_URI="mysql+pymysql://developer:temppassword@localhost:3306/app_sec_db",
         SQLALCHEMY_TRACK_MODIFICATIONS=False,
-        MAX_CONTENT_LENGTH = 3 * 1024 * 1024,
-        UPLOAD_EXTENSIONS = ['.jpg', '.png', '.gif', '.jpeg'],
-        SESSION_COOKIE_SECURE = True,
-        SESSION_COOKIE_HTTPSONLY = True,
-        SESSION_COOKIE_SAMESITE = 'Lax',
-        REMEMBER_COOKIE_SECURE = 'True'
-
+        MAX_CONTENT_LENGTH=3 * 1024 * 1024,
+        UPLOAD_EXTENSIONS=['.jpg', '.png', '.gif', '.jpeg'],
+        SESSION_COOKIE_SECURE=True,
+        SESSION_COOKIE_HTTPSONLY=True,
+        SESSION_COOKIE_SAMESITE='Lax',
+        REMEMBER_COOKIE_SECURE='True'
     )
-
 
     csp = {
         'script-src': [
@@ -42,7 +39,6 @@ def create_app():
             'https://code.jquery.com',
             'https://ajax.googleapis.com',
             "'unsafe-inline'"  # Required for some Bootstrap styles
-
         ],
         'style-src': [
             "'self'",
@@ -57,12 +53,15 @@ def create_app():
             "'self'", 'data:'
         ]
     }
-    Talisman(app, force_https = True,content_security_policy=csp)
+
+    Talisman(app, force_https=True, content_security_policy=csp)
     login_manager.init_app(app)
     login_manager.login_view = 'account.login'
+
     @login_manager.user_loader
     def load_user(user_id):
-        return db.session.get(User, user_id)
+        return User.query.get(user_id)  # Updated to use .get() instead of db.session.get()
+
     db.init_app(app)
     # Enable CSRF protection
     csrf = CSRFProtect(app)
@@ -77,7 +76,10 @@ def create_app():
     app.register_blueprint(testbp)
     app.register_blueprint(create_post)
     app.register_blueprint(profile)
+    app.register_blueprint(friends)  # ADD THIS LINE
     register_error_handlers(app)
+
+    initialize_friends_security(app)
 
 
     return app
@@ -86,13 +88,3 @@ def create_app():
 if __name__ == '__main__':
     app = create_app()
     app.run(ssl_context=('cert.pem', 'key.pem'))
-
-
-
-
-
-
-
-
-
-
