@@ -87,4 +87,17 @@ def create_app():
 
 if __name__ == '__main__':
     app = create_app()
+<<<<<<< Updated upstream
     app.run(ssl_context=('cert.pem', 'key.pem'))
+=======
+    app.run(ssl_context=('cert.pem', 'key.pem'))
+
+
+
+
+
+
+
+
+
+>>>>>>> Stashed changes
