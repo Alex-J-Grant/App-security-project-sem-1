@@ -13,6 +13,7 @@ from routes.acc import *
 from routes.profile import *
 from routes.search import *
 from routes.friends import friends  # ADD THIS LINE
+from routes.users import users  # ADD THIS LINE
 from flask_session import Session
 from flask_wtf.csrf import CSRFProtect
 from flask_talisman import Talisman
@@ -45,12 +46,15 @@ def create_app():
             'https://cdn.jsdelivr.net',
             'https://code.jquery.com',
             'https://ajax.googleapis.com',
+            'https://stackpath.bootstrapcdn.com',
+            'https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js',
             "'unsafe-inline'"  # Required for some Bootstrap styles
 
         ],
         'style-src': [
             "'self'",
             'https://cdn.jsdelivr.net',
+            'https://stackpath.bootstrapcdn.com',
             "'unsafe-inline'"  # Required for some Bootstrap styles
         ],
         'font-src': [
@@ -83,6 +87,7 @@ def create_app():
     app.register_blueprint(profile)
     app.register_blueprint(search_bp)
     app.register_blueprint(friends)  # ADD THIS LINE
+    app.register_blueprint(users)  # ADD THIS LINE
     register_error_handlers(app)
 
     # Initialize OWASP security features
