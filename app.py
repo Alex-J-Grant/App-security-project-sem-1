@@ -21,6 +21,7 @@ import secrets
 from flask import g
 from models.user import User  # ADD THIS LINE
 from security.friends_owasp_security import initialize_friends_security  # ADD THIS LINE
+from routes.comments import comments
 
 
 def create_app():
@@ -102,6 +103,7 @@ def create_app():
     app.register_blueprint(search_bp)
     app.register_blueprint(friends)  # ADD THIS LINE
     app.register_blueprint(users)  # ADD THIS LINE
+    app.register_blueprint(comments)
     register_error_handlers(app)
 
     # Initialize OWASP security features
