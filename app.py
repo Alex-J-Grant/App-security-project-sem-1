@@ -1,6 +1,6 @@
 from flask import Flask
 from extensions import db
-from extensions import login_manager
+from extensions import login_manager,mail
 from routes.test import testbp
 from helperfuncs.error_handling import register_error_handlers
 from flask_limiter import Limiter
@@ -20,6 +20,7 @@ import secrets
 from flask import g
 from models.user import User  # ADD THIS LINE
 from security.friends_owasp_security import initialize_friends_security  # ADD THIS LINE
+from flask_mail import Mail,Message
 
 def create_app():
     app =Flask(__name__, static_folder = "static")
@@ -70,6 +71,18 @@ def create_app():
     db.init_app(app)
     # Enable CSRF protection
     csrf = CSRFProtect(app)
+    app.config.update(
+        MAIL_SERVER='smtp.gmail.com',
+        MAIL_PORT=587,
+        MAIL_USE_SSL=False,
+        MAIL_USE_TLS=True,
+        MAIL_USERNAME=os.getenv('EMAIL'),
+        MAIL_PASSWORD=os.getenv('EMAIL_PASSWORD'),  # must be a Gmail app password
+        MAIL_DEFAULT_SENDER=os.getenv('EMAIL'),
+    )
+    mail.init_app(app)
+
+
 
     # register blueprints here for your routes
     app.register_blueprint(account)

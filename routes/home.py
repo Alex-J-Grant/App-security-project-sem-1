@@ -4,6 +4,7 @@ from flask import Blueprint, render_template, url_for
 from extensions import db
 from sqlalchemy import text
 import os
+from helperfuncs.email_sender import send_email
 UPLOAD_FOLDER_POST = 'static/images/post_images'
 
 # Define the blueprint
