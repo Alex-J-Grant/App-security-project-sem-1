@@ -11,6 +11,7 @@ from PIL import Image
 from helperfuncs.validation import allowed_mime_type, virus_check
 import bleach
 from flask_login import login_required,current_user
+from rate_limiter_config import limiter
 UPLOAD_FOLDER_POST = 'static/images/post_images'
 
 view_post = Blueprint('view_post', __name__, url_prefix='/view_post')
@@ -61,6 +62,7 @@ def view_post_route(post_id):
 
 
 @create_post.route('/upload_post', methods=['GET', 'POST'])
+@limiter.limit("5 per minute")
 @login_required
 def upload_post():
     form = PostForm()
@@ -132,3 +134,5 @@ def upload_post():
             flash("Sorry something went wrong please try again later.", "danger")
 
     return render_template('upload_post.html', form=form)
+
+

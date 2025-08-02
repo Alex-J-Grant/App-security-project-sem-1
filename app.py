@@ -20,7 +20,7 @@ import secrets
 from flask import g
 from models.user import User  # ADD THIS LINE
 from security.friends_owasp_security import initialize_friends_security  # ADD THIS LINE
-from flask_mail import Mail,Message
+
 
 def create_app():
     app =Flask(__name__, static_folder = "static")
@@ -82,6 +82,7 @@ def create_app():
     )
     mail.init_app(app)
 
+    limiter.init_app(app)
 
 
     # register blueprints here for your routes
