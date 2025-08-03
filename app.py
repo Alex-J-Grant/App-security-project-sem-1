@@ -19,6 +19,7 @@ from flask_talisman import Talisman
 import secrets
 from flask import g
 from models.user import User  # ADD THIS LINE
+from models.session import *
 from security.friends_owasp_security import initialize_friends_security  # ADD THIS LINE
 
 def create_app():
@@ -34,7 +35,10 @@ def create_app():
         SESSION_COOKIE_SECURE = True,
         SESSION_COOKIE_HTTPSONLY = True,
         SESSION_COOKIE_SAMESITE = 'Lax',
-        REMEMBER_COOKIE_SECURE = 'True'
+        REMEMBER_COOKIE_SECURE = True,
+        SESSION_TYPE = 'sqlalchemy',
+        SESSION_SQLALCHEMY = db
+
 
     )
 
@@ -68,6 +72,7 @@ def create_app():
     def load_user(user_id):
         return User.query.get(user_id)  # CHANGED: Use .get() instead of db.session.get()
     db.init_app(app)
+    sess = Session(app)
     # Enable CSRF protection
     csrf = CSRFProtect(app)
 
