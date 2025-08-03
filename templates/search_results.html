@@ -36,10 +36,9 @@
                     <div class="d-flex align-items-center p-2">
                         <img src="static/images/profile_pictures/{{ u.USERPFP }}" alt="pfp" class="rounded-circle me-2"
                              style="width:40px;height:40px;object-fit:cover;"
-                             onerror="this.onerror=null; this.src='/static/images/2903-default-blue.jpg';">
+                             onerror="this.onerror=null; this.src='/static/images/default_pfp.jpg';">
                         <div>
-                            <div class="fw-bold">{{ u.FNAME }} {{ u.LNAME }}</div>
-                            <small class="text-muted">u/{{ u.USERNAME }}</small>
+                            u/{{ u.USERNAME }}
                         </div>
                     </div>
                 </div>
