@@ -37,7 +37,8 @@
                     <ul class="dropdown-menu" aria-labelledby="friendsDropdown">
                         <li><a class="dropdown-item" href="{{ url_for('friends.search_users') }}">Find Friends</a></li>
                         <li><a class="dropdown-item" href="{{ url_for('friends.friends_list') }}">My Friends</a></li>
-                        <li><a class="dropdown-item" href="{{ url_for('friends.view_requests') }}">Friend Requests</a></li>
+                        <li><a class="dropdown-item" href="{{ url_for('friends.view_requests') }}">Friend Requests</a>
+                        </li>
                         <li><a class="dropdown-item" href="{{ url_for('friends.messages_overview') }}">Messages</a></li>
                     </ul>
                 </li>
@@ -46,8 +47,9 @@
             </ul>
 
             <!-- Centered search -->
-            <div class="flex-grow-1 d-flex justify-content-center mx-3" style="max-width: 600px; min-width: 200px;">
-                <div class="position-relative w-100">
+            <!-- Centered search -->
+            <div class="search-container flex-fill d-flex justify-content-center px-3">
+                <div class="position-relative" style="width:100%; max-width:600px;">
                     <input
                             id="global-search"
                             class="form-control form-control-lg"
@@ -55,9 +57,9 @@
                             placeholder="Search communities or users..."
                             aria-label="Search"
                             autocomplete="off"
-                            style="font-size: 1.1rem; border-radius: 0.4rem;">
+                            style="font-size: 1.1rem; border-radius: 0.4rem; width:100%;">
                     <div id="suggestions" class="list-group position-absolute w-100"
-                         style="z-index:1050; top:100%; display:none; background: white; max-height: 300px; overflow-y: auto;">
+                         style="z-index:1050; top:100%; display:none; background: white;">
                         <!-- filled dynamically -->
                     </div>
                 </div>
@@ -71,7 +73,9 @@
                     <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="accountDropdown">
                         {% if current_user.is_authenticated %}
                         <li><h6 class="dropdown-header">Signed in as: {{ current_user.username }}</h6></li>
-                        <li><hr class="dropdown-divider"></li>
+                        <li>
+                            <hr class="dropdown-divider">
+                        </li>
                         <li><a class="dropdown-item" href="{{ url_for('profile.view') }}">
                             <i class="bi bi-person-circle"></i> Profile</a></li>
                         <li><a class="dropdown-item" href="{{ url_for('account.logout') }}">
@@ -84,13 +88,17 @@
                         {% endif %}
 
                         {% if role == 'Admin' %}
-                        <li><hr class="dropdown-divider"></li>
+                        <li>
+                            <hr class="dropdown-divider">
+                        </li>
                         <li><h6 class="dropdown-header">Admin</h6></li>
                         <li><a class="dropdown-item" href="fixme">Admin Panel</a></li>
                         <li><a class="dropdown-item" href="/faq/manage">Manage FAQ</a></li>
                         <li><a class="dropdown-item" href="/contact/manage">Manage Contact</a></li>
                         {% else %}
-                        <li><hr class="dropdown-divider"></li>
+                        <li>
+                            <hr class="dropdown-divider">
+                        </li>
                         <li><h6 class="dropdown-header">Help & Support</h6></li>
                         <li><a class="dropdown-item" href="/faq">FAQ</a></li>
                         <li><a class="dropdown-item" href="/contact/add">Contact</a></li>
@@ -103,41 +111,3 @@
     <script src="{{ url_for('static', filename='javascript/search_suggest.js') }}" defer></script>
 </nav>
 
-<!-- Add this script if Bootstrap isn't working -->
-<script>
-// Fallback dropdown toggle for Bootstrap issues
-document.addEventListener('DOMContentLoaded', function() {
-    // Manual dropdown toggle if Bootstrap fails
-    const dropdownToggles = document.querySelectorAll('.dropdown-toggle');
-
-    dropdownToggles.forEach(toggle => {
-        toggle.addEventListener('click', function(e) {
-            e.preventDefault();
-            const dropdownMenu = this.nextElementSibling;
-
-            // Close other dropdowns
-            document.querySelectorAll('.dropdown-menu').forEach(menu => {
-                if (menu !== dropdownMenu) {
-                    menu.style.display = 'none';
-                }
-            });
-
-            // Toggle current dropdown
-            if (dropdownMenu.style.display === 'block') {
-                dropdownMenu.style.display = 'none';
-            } else {
-                dropdownMenu.style.display = 'block';
-            }
-        });
-    });
-
-    // Close dropdowns when clicking outside
-    document.addEventListener('click', function(e) {
-        if (!e.target.closest('.dropdown')) {
-            document.querySelectorAll('.dropdown-menu').forEach(menu => {
-                menu.style.display = 'none';
-            });
-        }
-    });
-});
-</script>

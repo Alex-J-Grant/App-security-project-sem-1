@@ -1,23 +1,22 @@
 
 import os
 import uuid
-from flask import Blueprint, render_template, request, redirect, flash, url_for, session
+from flask import Blueprint, render_template, request, redirect, flash, url_for, session,jsonify
 from flask_login import login_required,current_user
 from extensions import db
 from wtforms import ValidationError
 from forms.postforms import PostForm
 from sqlalchemy import text
 from PIL import Image
-from helperfuncs.validation import allowed_mime_type, virus_check
+from helperfuncs.post_likes import like_post,unlike_post
 import bleach
 from flask_login import login_required,current_user
 from rate_limiter_config import limiter
 UPLOAD_FOLDER_POST = 'static/images/post_images'
 
 view_post = Blueprint('view_post', __name__, url_prefix='/view_post')
-
 create_post = Blueprint('create_post',__name__)
-
+like_bp = Blueprint("like", __name__)  # register this in create_app
 @view_post.route('/<post_id>')
 def view_post_route(post_id):
     query = text("""
@@ -136,3 +135,31 @@ def upload_post():
     return render_template('upload_post.html', form=form)
 
 
+
+
+@like_bp.route("/post/<post_id>/like", methods=["POST"])
+@login_required
+def toggle_like(post_id):
+    action = request.form.get("action")  # "like" or "unlike"
+    if action not in ("like", "unlike"):
+        return jsonify({"error": "invalid action"}), 400
+
+    user_id = current_user.id
+    if action == "like":
+        new_count = like_post(user_id, post_id)
+        if new_count is None:
+            # already liked
+            return jsonify({"liked": True, "like_count": get_like_count(post_id)})
+        return jsonify({"liked": True, "like_count": new_count})
+    else:  # unlike
+        new_count = unlike_post(user_id, post_id)
+        if new_count is None:
+            # wasn't liked
+            return jsonify({"liked": False, "like_count": get_like_count(post_id)})
+        return jsonify({"liked": False, "like_count": new_count})
+
+def get_like_count(post_id):
+    stmt = text("SELECT LIKE_COUNT FROM POST WHERE POST_ID = :pid")
+    with db.engine.connect() as conn:
+        row = conn.execute(stmt, {"pid": post_id}).first()
+    return row["LIKE_COUNT"] if row else 0

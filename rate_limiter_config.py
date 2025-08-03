@@ -1,6 +1,5 @@
 from flask_limiter import Limiter
 from flask_login import current_user
-import uuid
 from flask import session
 
 #FIXXX when have session id
