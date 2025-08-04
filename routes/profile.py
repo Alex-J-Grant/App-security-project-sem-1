@@ -15,7 +15,6 @@ def view():
     main_logger.info('view profile')
     return render_template('viewprofile.html', username = current_user.username, fname = current_user.fname, lname = current_user.lname, gender = current_user.gender, telno = current_user.telno, postal = current_user.postal, address = current_user.address, email = current_user.email)
 
-# to be deleted
 @profile.route('/testing', methods = ['GET', 'POST'])
 @login_required
 def dump():
