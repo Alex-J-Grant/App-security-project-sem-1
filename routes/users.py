@@ -6,7 +6,7 @@ from extensions import db
 from models.user import User
 from models.friend import Friend, FriendRequest
 from helperfuncs.logger import main_logger
-
+from helperfuncs.post_likes import has_liked_post
 users = Blueprint('users', __name__, url_prefix='/users')
 
 
@@ -55,7 +55,8 @@ def user_profile(username):
                                             filename=f'images/profile_pictures/{post.subcommunity_pfp}') if post.subcommunity_pfp else '/static/images/SC_logo.png',
                 'created_at': post.created_at.strftime('%Y-%m-%d %H:%M:%S'),
                 'likes': post.likes,
-                'comments': post.comments
+                'comments': post.comments,
+                'user_liked': has_liked_post(current_user.id,post.id)
             })
 
         # Determine friendship status if user is logged in

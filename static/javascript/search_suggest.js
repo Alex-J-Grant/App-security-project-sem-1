@@ -9,7 +9,6 @@ function debounce(fn, delay) {
 
 const input = document.getElementById("global-search");
 const suggestionsEl = document.getElementById("suggestions");
-let focusedIndex = -1; // for keyboard nav
 let currentItems = []; // flattened list for navigation
 
 function escapeHtml(str) {
@@ -108,28 +107,6 @@ function updateFocus() {
   }
 }
 
-// keyboard navigation
-input.addEventListener("keydown", (e) => {
-  const items = suggestionsEl.querySelectorAll(".suggestion-item");
-  if (items.length === 0) return;
-
-  if (e.key === "ArrowDown") {
-    e.preventDefault();
-    focusedIndex = Math.min(focusedIndex + 1, items.length - 1);
-    updateFocus();
-  } else if (e.key === "ArrowUp") {
-    e.preventDefault();
-    focusedIndex = Math.max(focusedIndex - 1, 0);
-    updateFocus();
-  } else if (e.key === "Enter") {
-    if (focusedIndex >= 0 && focusedIndex < items.length) {
-      e.preventDefault();
-      items[focusedIndex].click();
-    }
-  } else if (e.key === "Escape") {
-    hideSuggestions();
-  }
-});
 
 // click outside to close
 document.addEventListener("click", (e) => {

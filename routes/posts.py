@@ -8,10 +8,10 @@ from wtforms import ValidationError
 from forms.postforms import PostForm
 from sqlalchemy import text
 from PIL import Image
-from helperfuncs.post_likes import like_post,unlike_post
 import bleach
 from flask_login import login_required,current_user
 from rate_limiter_config import limiter
+from helperfuncs.post_likes import has_liked_post
 UPLOAD_FOLDER_POST = 'static/images/post_images'
 
 view_post = Blueprint('view_post', __name__, url_prefix='/view_post')
@@ -55,7 +55,9 @@ def view_post_route(post_id):
         'subcommunity_name': result.subcommunity_name,
         'created_at': result.created_at.strftime('%Y-%m-%d %H:%M:%S'),
         'likes': result.likes,
-        'comments': result.comments
+        'comments': result.comments,
+        'user_liked': has_liked_post(current_user.id,result.id)
+
     }
     return render_template('inside_post.html', post=post, back_url = request.referrer)
 
@@ -137,29 +139,61 @@ def upload_post():
 
 
 
-@like_bp.route("/post/<post_id>/like", methods=["POST"])
+@like_bp.route("/like/<string:post_id>/<action>", methods=["POST"])
 @login_required
-def toggle_like(post_id):
-    action = request.form.get("action")  # "like" or "unlike"
+@limiter.limit("15 per minute")
+def like_action(post_id, action):
+    #get the user id
+    user_id = current_user.id
+
+    #don't do anything if action is not like or unlike
     if action not in ("like", "unlike"):
         return jsonify({"error": "invalid action"}), 400
 
-    user_id = current_user.id
-    if action == "like":
-        new_count = like_post(user_id, post_id)
-        if new_count is None:
-            # already liked
-            return jsonify({"liked": True, "like_count": get_like_count(post_id)})
-        return jsonify({"liked": True, "like_count": new_count})
-    else:  # unlike
-        new_count = unlike_post(user_id, post_id)
-        if new_count is None:
-            # wasn't liked
-            return jsonify({"liked": False, "like_count": get_like_count(post_id)})
-        return jsonify({"liked": False, "like_count": new_count})
+    #starts transaction so if any errors then goes back to the state before
+    with db.engine.begin() as conn:  # transaction
+        # check existing
+        existing = conn.execute(
+            text("SELECT 1 FROM POST_LIKE WHERE USER_ID = :uid AND POST_ID = :pid LIMIT 1"),
+            {"uid": user_id, "pid": post_id}
+        ).fetchone()
 
-def get_like_count(post_id):
-    stmt = text("SELECT LIKE_COUNT FROM POST WHERE POST_ID = :pid")
-    with db.engine.connect() as conn:
-        row = conn.execute(stmt, {"pid": post_id}).first()
-    return row["LIKE_COUNT"] if row else 0
+        liked = False
+        if action == "like":
+            if not existing:
+                # insert like
+                conn.execute(
+                    text("INSERT INTO POST_LIKE (USER_ID, POST_ID) VALUES (:uid, :pid)"),
+                    {"uid": user_id, "pid": post_id}
+                )
+                # increment cached counter
+                conn.execute(
+                    text("UPDATE POST SET LIKE_COUNT = LIKE_COUNT + 1 WHERE POST_ID = :pid"),
+                    {"pid": post_id}
+                )
+                liked = True
+            else:
+                liked = True  # already liked
+        # double check that the action is unlike
+        elif action == "unlike":
+            if existing:
+                conn.execute(
+                    text("DELETE FROM POST_LIKE WHERE USER_ID = :uid AND POST_ID = :pid"),
+                    {"uid": user_id, "pid": post_id}
+                )
+                conn.execute(
+                    text("UPDATE POST SET LIKE_COUNT = LIKE_COUNT - 1 WHERE POST_ID = :pid AND LIKE_COUNT > 0"),
+                    {"pid": post_id}
+                )
+                liked = False
+            else:
+                liked = False  # was not liked
+
+        # fetch updated like count
+        lc = conn.execute(
+            text("SELECT LIKE_COUNT FROM POST WHERE POST_ID = :pid"),
+            {"pid": post_id}
+        ).fetchone()
+        like_count = lc.LIKE_COUNT if lc else 0
+
+    return jsonify({"liked": liked, "like_count": like_count})
