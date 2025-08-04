@@ -4,6 +4,7 @@ from flask_login import login_required, current_user, logout_user
 from forms.profileforms import Editprofile, Delprofile
 from extensions import db
 from models.user import User
+from helperfuncs.rba import *
 
 
 profile = Blueprint('profile', __name__, url_prefix= '/profile')
@@ -14,6 +15,7 @@ def view():
     main_logger.info('view profile')
     return render_template('viewprofile.html', username = current_user.username, fname = current_user.fname, lname = current_user.lname, gender = current_user.gender, telno = current_user.telno, postal = current_user.postal, address = current_user.address, email = current_user.email)
 
+# to be deleted
 @profile.route('/testing', methods = ['GET', 'POST'])
 @login_required
 def dump():
@@ -70,4 +72,11 @@ def delete():
 def forgetpw():
     return redirect(url_for('profile.view'))
 
+
+# to be deleted
+@profile.route('/admintest', methods = ['GET', 'POST'])
+@login_required
+@admin_required
+def admin():
+    return render_template('home.html')
 

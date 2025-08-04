@@ -29,6 +29,34 @@ CREATE TABLE app_sec_db.USERS(
     ROLE ENUM('Admin', 'User') DEFAULT 'User' NOT NULL,
     SETTINGS JSON
   );
+
+
+INSERT INTO USERS (
+  USER_ID, USERNAME, USERPFP, FNAME, LNAME, GENDER, DOB, EMAIL,
+  PASSWORD_HASH, TEL_NO, ADDRESS, POSTAL_CODE, IS_ACTIVE, IS_VERIFIED,
+  CREATED_AT, ROLE, SETTINGS
+)VALUES (
+  'ce2c0b67-3132-4181-b78d-da8b7f4bb4c7',
+  'Admin',
+  NULL,
+  'Admin',
+  'Account',
+  'Other',
+  '1970-01-01',
+  'admin@example.com',
+  'scrypt:32768:8:1$tDCkbR9hs7RN43k3$d39a213ccb68d49c60038e83bb06c22fc06bddfad08c596a8c3802f51bfc49da009ddcecb2a150e6c6ef6bfea0efa7a7fa6f5dadc27496d1c9388ee594da994d',
+  '12345678',
+  '123 Admin Street',
+  '123456',
+  TRUE,
+  TRUE,
+  CURRENT_TIMESTAMP,
+  'Admin',
+  '{}'
+);
+
+
+
 CREATE TABLE app_sec_db.SUBCOMMUNITY(
   ID VARCHAR(50) primary key,
   NAME VARCHAR(30) NOT NULL UNIQUE,
