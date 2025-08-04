@@ -1,23 +1,22 @@
 
 import os
 import uuid
-from flask import Blueprint, render_template, request, redirect, flash, url_for, session
+from flask import Blueprint, render_template, request, redirect, flash, url_for, session,jsonify
 from flask_login import login_required,current_user
 from extensions import db
 from wtforms import ValidationError
 from forms.postforms import PostForm
 from sqlalchemy import text
 from PIL import Image
-from helperfuncs.validation import allowed_mime_type, virus_check
 import bleach
 from flask_login import login_required,current_user
 from rate_limiter_config import limiter
+from helperfuncs.post_likes import has_liked_post
 UPLOAD_FOLDER_POST = 'static/images/post_images'
 
 view_post = Blueprint('view_post', __name__, url_prefix='/view_post')
-
 create_post = Blueprint('create_post',__name__)
-
+like_bp = Blueprint("like", __name__)  # register this in create_app
 @view_post.route('/<post_id>')
 def view_post_route(post_id):
     query = text("""
@@ -56,7 +55,9 @@ def view_post_route(post_id):
         'subcommunity_name': result.subcommunity_name,
         'created_at': result.created_at.strftime('%Y-%m-%d %H:%M:%S'),
         'likes': result.likes,
-        'comments': result.comments
+        'comments': result.comments,
+        'user_liked': has_liked_post(current_user.id,result.id)
+
     }
     return render_template('inside_post.html', post=post, back_url = request.referrer)
 
@@ -136,3 +137,63 @@ def upload_post():
     return render_template('upload_post.html', form=form)
 
 
+
+
+@like_bp.route("/like/<string:post_id>/<action>", methods=["POST"])
+@login_required
+@limiter.limit("15 per minute")
+def like_action(post_id, action):
+    #get the user id
+    user_id = current_user.id
+
+    #don't do anything if action is not like or unlike
+    if action not in ("like", "unlike"):
+        return jsonify({"error": "invalid action"}), 400
+
+    #starts transaction so if any errors then goes back to the state before
+    with db.engine.begin() as conn:  # transaction
+        # check existing
+        existing = conn.execute(
+            text("SELECT 1 FROM POST_LIKE WHERE USER_ID = :uid AND POST_ID = :pid LIMIT 1"),
+            {"uid": user_id, "pid": post_id}
+        ).fetchone()
+
+        liked = False
+        if action == "like":
+            if not existing:
+                # insert like
+                conn.execute(
+                    text("INSERT INTO POST_LIKE (USER_ID, POST_ID) VALUES (:uid, :pid)"),
+                    {"uid": user_id, "pid": post_id}
+                )
+                # increment cached counter
+                conn.execute(
+                    text("UPDATE POST SET LIKE_COUNT = LIKE_COUNT + 1 WHERE POST_ID = :pid"),
+                    {"pid": post_id}
+                )
+                liked = True
+            else:
+                liked = True  # already liked
+        # double check that the action is unlike
+        elif action == "unlike":
+            if existing:
+                conn.execute(
+                    text("DELETE FROM POST_LIKE WHERE USER_ID = :uid AND POST_ID = :pid"),
+                    {"uid": user_id, "pid": post_id}
+                )
+                conn.execute(
+                    text("UPDATE POST SET LIKE_COUNT = LIKE_COUNT - 1 WHERE POST_ID = :pid AND LIKE_COUNT > 0"),
+                    {"pid": post_id}
+                )
+                liked = False
+            else:
+                liked = False  # was not liked
+
+        # fetch updated like count
+        lc = conn.execute(
+            text("SELECT LIKE_COUNT FROM POST WHERE POST_ID = :pid"),
+            {"pid": post_id}
+        ).fetchone()
+        like_count = lc.LIKE_COUNT if lc else 0
+
+    return jsonify({"liked": liked, "like_count": like_count})

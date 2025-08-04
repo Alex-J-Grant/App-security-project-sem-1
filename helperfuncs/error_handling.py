@@ -24,9 +24,10 @@ def register_error_handlers(app):
 
     @app.errorhandler(429)
     def ratelimit_handler(e):
-
         if request.path == "/chatbot":
             # Return JSON in same shape your frontend expects
+            return jsonify({'response': "Please slow down, too many requests."}), 429
+        if request.path.startswith("/like") and (request.path.endswith("/like") or request.path.endswith("/unlike")):
             return jsonify({'response': "Please slow down, too many requests."}), 429
         else:
             flash('Submitting requests too fast please slow down', 'danger')
