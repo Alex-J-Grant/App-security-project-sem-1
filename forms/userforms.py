@@ -25,7 +25,7 @@ class Createuser(FlaskForm):
     def validate_username(self, field):
         existing = User.query.filter_by(username=field.data).first()
         if existing:
-            raise ValidationError('Username is already taken')
+            raise ValidationError('This is already taken')
 
 
 class Loginuser(FlaskForm):
