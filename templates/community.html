@@ -30,7 +30,7 @@
             <div class="post-header d-flex align-items-center p-3 border-bottom">
                 <img src="{{ post.user_pfp }}" class="avatar me-3" alt="Avatar">
                 <div>
-                    <a href="#" class="post_link"><div class="username">{{ post.username }}</div></a>
+                    <a href="/users/{{post.username}}" class="post_link"><div class="username">{{ post.username }}</div></a>
                     <div class="timestamp">{{ post.created_at }}</div>
                 </div>
             </div>
