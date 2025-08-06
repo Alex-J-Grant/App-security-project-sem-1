@@ -1,0 +1,274 @@
+{% extends "base.html" %}
+
+{% block title %}FAQ - SecureApp{% endblock %}
+
+{% block head %}
+<!-- Additional CSS for FAQ page -->
+<style>
+    .faq-section {
+        margin-bottom: 3rem;
+    }
+    .faq-item {
+        border: 1px solid #e9ecef;
+        border-radius: 8px;
+        margin-bottom: 1rem;
+        overflow: hidden;
+    }
+    .faq-question {
+        background: #f8f9fa;
+        padding: 1rem;
+        margin: 0;
+        cursor: pointer;
+        transition: background-color 0.3s;
+    }
+    .faq-question:hover {
+        background: #e9ecef;
+    }
+    .faq-answer {
+        padding: 1rem;
+        display: none;
+        border-top: 1px solid #e9ecef;
+    }
+    .faq-answer.show {
+        display: block;
+    }
+    .security-highlight {
+        background: linear-gradient(135deg, #28a745, #20c997);
+        color: white;
+        padding: 2rem;
+        border-radius: 10px;
+        margin-bottom: 3rem;
+    }
+    .search-box {
+        max-width: 500px;
+        margin: 0 auto 3rem auto;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container my-5">
+    <div class="row">
+        <div class="col-lg-8 mx-auto">
+            <h1 class="text-center mb-4">
+                <i class="fas fa-question-circle text-primary"></i>
+                Frequently Asked Questions
+            </h1>
+
+            <!-- Security Highlight -->
+            <div class="security-highlight text-center">
+                <h3><i class="fas fa-shield-alt"></i> Security First</h3>
+                <p class="mb-0">Your privacy and security are our top priorities. Learn how we protect your data.</p>
+            </div>
+
+            <!-- Search Box -->
+            <div class="search-box">
+                <div class="input-group">
+                    <input type="text" class="form-control" id="faqSearch" placeholder="Search FAQ...">
+                    <button class="btn btn-outline-primary" type="button">
+                        <i class="fas fa-search"></i>
+                    </button>
+                </div>
+            </div>
+
+            <!-- Security & Privacy Section -->
+            <div class="faq-section">
+                <h2 class="text-primary mb-3">
+                    <i class="fas fa-lock"></i> Security & Privacy
+                </h2>
+
+                <div class="faq-item" data-keywords="security data protection privacy">
+                    <h5 class="faq-question">
+                        <i class="fas fa-shield-alt text-success"></i>
+                        How is my personal data protected?
+                        <i class="fas fa-chevron-down float-end"></i>
+                    </h5>
+                    <div class="faq-answer">
+                        <p>We implement industry-standard security measures including:</p>
+                        <ul>
+                            <li><strong>Encryption:</strong> All data is encrypted in transit and at rest</li>
+                            <li><strong>Access Control:</strong> Role-based permissions ensure only authorized access</li>
+                            <li><strong>Authentication:</strong> Secure login with session management</li>
+                            <li><strong>Monitoring:</strong> 24/7 security monitoring and logging</li>
+                            <li><strong>OWASP Compliance:</strong> Following OWASP Top 10 security guidelines</li>
+                        </ul>
+                    </div>
+                </div>
+
+                <div class="faq-item" data-keywords="password security account safety">
+                    <h5 class="faq-question">
+                        <i class="fas fa-key text-warning"></i>
+                        What should I do if I forget my password?
+                        <i class="fas fa-chevron-down float-end"></i>
+                    </h5>
+                    <div class="faq-answer">
+                        <p>If you forget your password:</p>
+                        <ol>
+                            <li>Click "Forgot Password" on the login page</li>
+                            <li>Enter your email address</li>
+                            <li>Check your email for a secure reset link</li>
+                            <li>Follow the link to create a new password</li>
+                        </ol>
+                        <div class="alert alert-info">
+                            <i class="fas fa-info-circle"></i>
+                            Reset links expire after 24 hours for security reasons.
+                        </div>
+                    </div>
+                </div>
+
+                <div class="faq-item" data-keywords="messages encryption chat privacy">
+                    <h5 class="faq-question">
+                        <i class="fas fa-comments text-info"></i>
+                        How are my messages protected?
+                        <i class="fas fa-chevron-down float-end"></i>
+                    </h5>
+                    <div class="faq-answer">
+                        <p>Your messages are protected through:</p>
+                        <ul>
+                            <li>Content sanitization to prevent malicious code</li>
+                            <li>Encrypted storage in our database</li>
+                            <li>Friend-only messaging (no strangers can contact you)</li>
+                            <li>Audit logging for security monitoring</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Account Features Section -->
+            <div class="faq-section">
+                <h2 class="text-primary mb-3">
+                    <i class="fas fa-user-cog"></i> Account Features
+                </h2>
+
+                <div class="faq-item" data-keywords="friends requests social">
+                    <h5 class="faq-question">
+                        <i class="fas fa-user-friends text-primary"></i>
+                        How does the friend system work?
+                        <i class="fas fa-chevron-down float-end"></i>
+                    </h5>
+                    <div class="faq-answer">
+                        <p>Our friend system allows you to connect with other users:</p>
+                        <ol>
+                            <li><strong>Search:</strong> Find users by username or name</li>
+                            <li><strong>Send Request:</strong> Send a friend request to someone you'd like to connect with</li>
+                            <li><strong>Accept/Decline:</strong> Respond to incoming friend requests</li>
+                            <li><strong>Message:</strong> Once friends, you can send private messages</li>
+                        </ol>
+                        <div class="alert alert-success">
+                            <i class="fas fa-check-circle"></i>
+                            Only confirmed friends can message each other for your safety.
+                        </div>
+                    </div>
+                </div>
+
+                <div class="faq-item" data-keywords="posts upload images community">
+                    <h5 class="faq-question">
+                        <i class="fas fa-image text-info"></i>
+                        What file types can I upload?
+                        <i class="fas fa-chevron-down float-end"></i>
+                    </h5>
+                    <div class="faq-answer">
+                        <p>Supported file formats for images:</p>
+                        <ul>
+                            <li>JPEG (.jpg, .jpeg)</li>
+                            <li>PNG (.png)</li>
+                            <li>GIF (.gif)</li>
+                        </ul>
+                        <p><strong>File size limit:</strong> 16MB maximum</p>
+                        <div class="alert alert-warning">
+                            <i class="fas fa-exclamation-triangle"></i>
+                            All uploads are scanned for security threats automatically.
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Technical Support Section -->
+            <div class="faq-section">
+                <h2 class="text-primary mb-3">
+                    <i class="fas fa-tools"></i> Technical Support
+                </h2>
+
+                <div class="faq-item" data-keywords="error bug problem technical">
+                    <h5 class="faq-question">
+                        <i class="fas fa-exclamation-circle text-danger"></i>
+                        I'm getting error messages, what should I do?
+                        <i class="fas fa-chevron-down float-end"></i>
+                    </h5>
+                    <div class="faq-answer">
+                        <p>If you encounter errors, try these steps:</p>
+                        <ol>
+                            <li>Refresh the page and try again</li>
+                            <li>Clear your browser cache and cookies</li>
+                            <li>Disable browser extensions temporarily</li>
+                            <li>Try using a different browser</li>
+                            <li>Check your internet connection</li>
+                        </ol>
+                        <p>If the problem persists, contact our support team with:</p>
+                        <ul>
+                            <li>The exact error message</li>
+                            <li>Steps to reproduce the issue</li>
+                            <li>Your browser and operating system</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Still Need Help -->
+            <div class="text-center mt-5">
+                <div class="card bg-light">
+                    <div class="card-body">
+                        <h4><i class="fas fa-life-ring text-primary"></i> Still Need Help?</h4>
+                        <p class="mb-3">Can't find the answer you're looking for? Our support team is here to help!</p>
+                        <a href="{{ url_for('pages.contact') }}" class="btn btn-primary">
+                            <i class="fas fa-envelope"></i> Contact Support
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+    // FAQ Toggle Functionality
+    document.querySelectorAll('.faq-question').forEach(question => {
+        question.addEventListener('click', () => {
+            const answer = question.nextElementSibling;
+            const icon = question.querySelector('.fa-chevron-down, .fa-chevron-up');
+
+            // Close all other answers
+            document.querySelectorAll('.faq-answer').forEach(otherAnswer => {
+                if (otherAnswer !== answer) {
+                    otherAnswer.classList.remove('show');
+                    otherAnswer.previousElementSibling.querySelector('.fa-chevron-down, .fa-chevron-up').className = 'fas fa-chevron-down float-end';
+                }
+            });
+
+            // Toggle current answer
+            answer.classList.toggle('show');
+            icon.className = answer.classList.contains('show') ? 'fas fa-chevron-up float-end' : 'fas fa-chevron-down float-end';
+        });
+    });
+
+    // Search Functionality
+    document.getElementById('faqSearch').addEventListener('input', function(e) {
+        const searchTerm = e.target.value.toLowerCase();
+        const faqItems = document.querySelectorAll('.faq-item');
+
+        faqItems.forEach(item => {
+            const keywords = item.dataset.keywords.toLowerCase();
+            const questionText = item.querySelector('.faq-question').textContent.toLowerCase();
+            const answerText = item.querySelector('.faq-answer').textContent.toLowerCase();
+
+            const matches = keywords.includes(searchTerm) ||
+                           questionText.includes(searchTerm) ||
+                           answerText.includes(searchTerm);
+
+            item.style.display = matches ? 'block' : 'none';
+        });
+    });
+</script>
+{% endblock %}

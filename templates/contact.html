@@ -1,0 +1,315 @@
+{% extends "base.html" %}
+
+{% block title %}Contact Us - SecureApp{% endblock %}
+
+{% block head %}
+<!-- Additional CSS for Contact page -->
+<style>
+    .contact-hero {
+        background: linear-gradient(135deg, #007bff, #6610f2);
+        color: white;
+        padding: 4rem 0;
+    }
+    .contact-card {
+        border: none;
+        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        transition: transform 0.3s, box-shadow 0.3s;
+        height: 100%;
+    }
+    .contact-card:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 8px 15px rgba(0, 0, 0, 0.2);
+    }
+    .contact-icon {
+        width: 60px;
+        height: 60px;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        margin: 0 auto 1rem auto;
+        font-size: 1.5rem;
+    }
+    .security-alert {
+        background: linear-gradient(135deg, #dc3545, #fd7e14);
+        color: white;
+        border-radius: 10px;
+        padding: 2rem;
+        margin-bottom: 2rem;
+    }
+    .form-floating input, .form-floating textarea, .form-floating select {
+        border: 2px solid #e9ecef;
+        transition: border-color 0.3s;
+    }
+    .form-floating input:focus, .form-floating textarea:focus, .form-floating select:focus {
+        border-color: #007bff;
+        box-shadow: 0 0 0 0.2rem rgba(0, 123, 255, 0.25);
+    }
+    .response-times {
+        background: #f8f9fa;
+        border-radius: 10px;
+        padding: 1.5rem;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<!-- Hero Section -->
+<div class="contact-hero">
+    <div class="container text-center">
+        <h1 class="display-4 mb-3">
+            <i class="fas fa-envelope"></i> Get in Touch
+        </h1>
+        <p class="lead">We're here to help with any questions or concerns about your account security</p>
+    </div>
+</div>
+
+<div class="container my-5">
+    <!-- Flash Messages -->
+    {% with messages = get_flashed_messages(with_categories=true) %}
+        {% if messages %}
+            {% for category, message in messages %}
+                <div class="alert alert-{{ 'danger' if category == 'error' else category }} alert-dismissible fade show" role="alert">
+                    <i class="fas fa-{{ 'check-circle' if category == 'success' else 'exclamation-triangle' if category == 'warning' else 'info-circle' }}"></i>
+                    {{ message }}
+                    <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                </div>
+            {% endfor %}
+        {% endif %}
+    {% endwith %}
+    <div class="row">
+        <!-- Contact Methods -->
+        <div class="col-lg-4 mb-4">
+            <h2 class="text-primary mb-4">
+                <i class="fas fa-headset"></i> Contact Methods
+            </h2>
+
+            <!-- General Support -->
+            <div class="card contact-card mb-3">
+                <div class="card-body text-center">
+                    <div class="contact-icon bg-primary text-white">
+                        <i class="fas fa-life-ring"></i>
+                    </div>
+                    <h5>General Support</h5>
+                    <p class="text-muted">support@yourapp.com</p>
+                    <small class="badge bg-success">Response: 24 hours</small>
+                </div>
+            </div>
+
+            <!-- Technical Issues -->
+            <div class="card contact-card mb-3">
+                <div class="card-body text-center">
+                    <div class="contact-icon bg-info text-white">
+                        <i class="fas fa-tools"></i>
+                    </div>
+                    <h5>Technical Issues</h5>
+                    <p class="text-muted">tech@yourapp.com</p>
+                    <small class="badge bg-info">Response: 12 hours</small>
+                </div>
+            </div>
+
+            <!-- Bug Reports -->
+            <div class="card contact-card mb-3">
+                <div class="card-body text-center">
+                    <div class="contact-icon bg-warning text-white">
+                        <i class="fas fa-bug"></i>
+                    </div>
+                    <h5>Bug Reports</h5>
+                    <p class="text-muted">bugs@yourapp.com</p>
+                    <small class="badge bg-warning">Response: 6 hours</small>
+                </div>
+            </div>
+
+            <!-- Security Issues -->
+            <div class="card contact-card mb-3">
+                <div class="card-body text-center">
+                    <div class="contact-icon bg-danger text-white">
+                        <i class="fas fa-shield-alt"></i>
+                    </div>
+                    <h5>Security Issues</h5>
+                    <p class="text-muted">security@yourapp.com</p>
+                    <small class="badge bg-danger">Response: Immediate</small>
+                </div>
+            </div>
+
+            <!-- Response Times Info -->
+            <div class="response-times">
+                <h6><i class="fas fa-clock text-primary"></i> Response Times</h6>
+                <ul class="list-unstyled small mb-0">
+                    <li><span class="badge bg-danger me-2">Security</span>Within 1 hour</li>
+                    <li><span class="badge bg-warning me-2">Bugs</span>Within 6 hours</li>
+                    <li><span class="badge bg-info me-2">Technical</span>Within 12 hours</li>
+                    <li><span class="badge bg-success me-2">General</span>Within 24 hours</li>
+                </ul>
+            </div>
+        </div>
+
+        <!-- Contact Form -->
+        <div class="col-lg-8">
+            <div class="card">
+                <div class="card-header bg-primary text-white">
+                    <h3 class="mb-0">
+                        <i class="fas fa-paper-plane"></i> Send us a Message
+                    </h3>
+                </div>
+                <div class="card-body">
+                    <form method="POST" id="contactForm">
+                        {{ form.hidden_tag() }}
+
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <div class="form-floating">
+                                    {{ form.first_name(class="form-control", placeholder="First Name") }}
+                                    {{ form.first_name.label }}
+                                    {% if form.first_name.errors %}
+                                        <div class="invalid-feedback d-block">
+                                            {% for error in form.first_name.errors %}{{ error }}{% endfor %}
+                                        </div>
+                                    {% endif %}
+                                </div>
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <div class="form-floating">
+                                    {{ form.last_name(class="form-control", placeholder="Last Name") }}
+                                    {{ form.last_name.label }}
+                                    {% if form.last_name.errors %}
+                                        <div class="invalid-feedback d-block">
+                                            {% for error in form.last_name.errors %}{{ error }}{% endfor %}
+                                        </div>
+                                    {% endif %}
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <div class="form-floating">
+                                    {{ form.email(class="form-control", placeholder="Email") }}
+                                    {{ form.email.label }}
+                                    {% if form.email.errors %}
+                                        <div class="invalid-feedback d-block">
+                                            {% for error in form.email.errors %}{{ error }}{% endfor %}
+                                        </div>
+                                    {% endif %}
+                                </div>
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <div class="form-floating">
+                                    {{ form.category(class="form-select") }}
+                                    {{ form.category.label }}
+                                    {% if form.category.errors %}
+                                        <div class="invalid-feedback d-block">
+                                            {% for error in form.category.errors %}{{ error }}{% endfor %}
+                                        </div>
+                                    {% endif %}
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="mb-3">
+                            <div class="form-floating">
+                                {{ form.subject(class="form-control", placeholder="Subject") }}
+                                {{ form.subject.label }}
+                                {% if form.subject.errors %}
+                                    <div class="invalid-feedback d-block">
+                                        {% for error in form.subject.errors %}{{ error }}{% endfor %}
+                                    </div>
+                                {% endif %}
+                            </div>
+                        </div>
+
+                        <div class="mb-3">
+                            <div class="form-floating">
+                                {{ form.message(class="form-control", placeholder="Message", style="height: 150px") }}
+                                {{ form.message.label }}
+                                {% if form.message.errors %}
+                                    <div class="invalid-feedback d-block">
+                                        {% for error in form.message.errors %}{{ error }}{% endfor %}
+                                    </div>
+                                {% endif %}
+                            </div>
+                            <div class="form-text">
+                                For security issues, please include as much detail as possible. For bug reports, please include steps to reproduce the issue.
+                            </div>
+                        </div>
+
+                        <!-- Security Guidelines -->
+                        <div class="alert alert-info" id="securityGuidelines" style="display: none;">
+                            <h6><i class="fas fa-info-circle"></i> Security Issue Guidelines</h6>
+                            <ul class="mb-0 small">
+                                <li>DO NOT include passwords or sensitive personal information</li>
+                                <li>Describe the vulnerability or security concern in detail</li>
+                                <li>Include steps to reproduce if applicable</li>
+                                <li>Mention which browser/device you're using</li>
+                            </ul>
+                        </div>
+
+                        <!-- Bug Report Guidelines -->
+                        <div class="alert alert-warning" id="bugGuidelines" style="display: none;">
+                            <h6><i class="fas fa-bug"></i> Bug Report Guidelines</h6>
+                            <ul class="mb-0 small">
+                                <li>Describe what you expected to happen</li>
+                                <li>Describe what actually happened</li>
+                                <li>Include step-by-step instructions to reproduce</li>
+                                <li>Mention your browser and operating system</li>
+                            </ul>
+                        </div>
+
+                        <div class="d-grid">
+                            <button type="submit" class="btn btn-primary btn-lg">
+                                <i class="fas fa-paper-plane"></i> Send Message
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+
+            <!-- FAQ Link -->
+            <div class="text-center mt-4">
+                <div class="card bg-light">
+                    <div class="card-body">
+                        <h5><i class="fas fa-question-circle text-primary"></i> Check Our FAQ First</h5>
+                        <p class="mb-2">Many common questions are answered in our FAQ section</p>
+                        <a href="{{ url_for('pages.faq') }}" class="btn btn-outline-primary">
+                            <i class="fas fa-list"></i> Browse FAQ
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+    // Show/hide guidelines based on category selection
+    document.getElementById('category').addEventListener('change', function() {
+        const securityGuidelines = document.getElementById('securityGuidelines');
+        const bugGuidelines = document.getElementById('bugGuidelines');
+
+        // Hide all guidelines first
+        securityGuidelines.style.display = 'none';
+        bugGuidelines.style.display = 'none';
+
+        // Show relevant guidelines
+        if (this.value === 'security') {
+            securityGuidelines.style.display = 'block';
+        } else if (this.value === 'bug') {
+            bugGuidelines.style.display = 'block';
+        }
+    });
+
+    // Auto-fill subject based on category
+    document.getElementById('category').addEventListener('change', function() {
+        const subject = document.getElementById('subject');
+        const categoryText = this.options[this.selectedIndex].text;
+
+        if (this.value && !subject.value) {
+            subject.value = categoryText.replace(/[🔒🐛⚙️👤💡💬]\s/, '') + ': ';
+            subject.focus();
+            subject.setSelectionRange(subject.value.length, subject.value.length);
+        }
+    });
+</script>
+{% endblock %}

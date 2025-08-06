@@ -1,0 +1,145 @@
+{% extends "base.html" %}
+
+{% block title %}Admin - Contact Messages{% endblock %}
+
+{% block content %}
+<div class="container my-4">
+    <!-- Header -->
+    <div class="bg-primary text-white p-4 rounded mb-4">
+        <h1><i class="fas fa-envelope"></i> Contact Messages Admin</h1>
+        <p class="mb-0">View and respond to user contact messages</p>
+    </div>
+
+    <!-- Flash Messages -->
+    {% with messages = get_flashed_messages(with_categories=true) %}
+        {% if messages %}
+            {% for category, message in messages %}
+                <div class="alert alert-{{ category }} alert-dismissible fade show">
+                    {{ message }}
+                    <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                </div>
+            {% endfor %}
+        {% endif %}
+    {% endwith %}
+
+    <!-- Stats -->
+    <div class="row mb-4">
+        <div class="col-md-3">
+            <div class="card text-center">
+                <div class="card-body">
+                    <h4 class="text-primary">{{ stats.total }}</h4>
+                    <small>Total Messages</small>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card text-center">
+                <div class="card-body">
+                    <h4 class="text-success">{{ stats.new }}</h4>
+                    <small>New Messages</small>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card text-center">
+                <div class="card-body">
+                    <h4 class="text-danger">{{ stats.security }}</h4>
+                    <small>Security Issues</small>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card text-center">
+                <div class="card-body">
+                    <h4 class="text-info">{{ messages|length }}</h4>
+                    <small>Showing</small>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Filters -->
+    <div class="card mb-4">
+        <div class="card-body">
+            <form method="GET" class="row">
+                <div class="col-md-6">
+                    <label>Filter by Category:</label>
+                    <select name="category" class="form-select" onchange="this.form.submit()">
+                        <option value="all" {{ 'selected' if current_category == 'all' }}>All Categories</option>
+                        <option value="security" {{ 'selected' if current_category == 'security' }}>🔒 Security Issues</option>
+                        <option value="bug" {{ 'selected' if current_category == 'bug' }}>🐛 Bug Reports</option>
+                        <option value="technical" {{ 'selected' if current_category == 'technical' }}>⚙️ Technical Support</option>
+                        <option value="account" {{ 'selected' if current_category == 'account' }}>👤 Account Issues</option>
+                        <option value="feature" {{ 'selected' if current_category == 'feature' }}>💡 Feature Requests</option>
+                        <option value="general" {{ 'selected' if current_category == 'general' }}>💬 General Inquiries</option>
+                    </select>
+                </div>
+                <div class="col-md-6">
+                    <label>&nbsp;</label><br>
+                    <a href="{{ url_for('pages.admin_contact_messages') }}" class="btn btn-secondary">Show All</a>
+                    <a href="{{ url_for('pages.contact') }}" class="btn btn-primary">View Form</a>
+                    <a href="{{ url_for('pages.admin_contact_messages', category='security') }}" class="btn btn-danger">Security Only</a>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Messages -->
+    {% if messages %}
+        {% for message in messages %}
+        <div class="card mb-3 {% if message.CATEGORY == 'security' %}border-danger{% endif %}">
+            <div class="card-header d-flex justify-content-between">
+                <div>
+                    <h5 class="mb-1">
+                        #{{ message.ID }} - {{ message.SUBJECT }}
+                        {% if message.CATEGORY == 'security' %}
+                            <span class="badge bg-danger">🔒 SECURITY</span>
+                        {% else %}
+                            <span class="badge bg-primary">{{ message.CATEGORY.upper() }}</span>
+                        {% endif %}
+                    </h5>
+                    <small class="text-muted">
+                        From: <strong>{{ message.FIRST_NAME }} {{ message.LAST_NAME }}</strong>
+                        ({{ message.EMAIL }}) | {{ message.CREATED_AT.strftime('%Y-%m-%d %H:%M') }}
+                    </small>
+                </div>
+            </div>
+            <div class="card-body">
+                <div class="bg-light p-3 rounded mb-3" style="max-height: 200px; overflow-y: auto;">
+                    <strong>Message:</strong><br>
+                    {{ message.MESSAGE|replace('\n', '<br>')|safe }}
+                </div>
+
+                <div class="row">
+                    <div class="col-md-12">
+                        <h6>Contact Actions:</h6>
+                        <a href="mailto:{{ message.EMAIL }}?subject=Re: {{ message.SUBJECT }}&body=Hi {{ message.FIRST_NAME }},%0D%0A%0D%0AThank you for contacting us.%0D%0A%0D%0A"
+                           class="btn btn-success me-2">
+                            <i class="fas fa-envelope"></i> Email Reply
+                        </a>
+                        <a href="{{ url_for('friends.search_users') }}?search={{ message.EMAIL }}"
+                           class="btn btn-info">
+                            <i class="fas fa-search"></i> Find User
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+        {% endfor %}
+    {% else %}
+        <div class="text-center py-5">
+            <i class="fas fa-inbox fa-3x text-muted mb-3"></i>
+            <h4>No Messages Found</h4>
+            <p>No contact messages match your filters.</p>
+            <a href="{{ url_for('pages.admin_contact_messages') }}" class="btn btn-primary">View All</a>
+        </div>
+    {% endif %}
+
+    <!-- Summary -->
+    {% if messages %}
+    <div class="alert alert-info text-center mt-4">
+        Showing {{ messages|length }} of {{ stats.total }} total messages
+    </div>
+    {% endif %}
+</div>
+{% endblock %}
