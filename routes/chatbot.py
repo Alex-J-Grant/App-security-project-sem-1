@@ -28,7 +28,7 @@ ALLOWED_TAGS = set(bleach.sanitizer.ALLOWED_TAGS).union({'p', 'br', 'pre', 'code
 chatbot = Blueprint('chatbot', __name__, url_prefix='')
 
 @chatbot.route('/chatbot', methods=['POST'])
-@limiter.limit("0 per minute")
+@limiter.limit("5 per minute")
 def chatbot_route():
     if not current_user.is_authenticated:
         return jsonify({'response': 'Sorry please sign in first to use the chatbot.'})
