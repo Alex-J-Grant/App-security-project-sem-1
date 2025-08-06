@@ -88,7 +88,7 @@ def create_app():
         MAIL_USE_SSL=False,
         MAIL_USE_TLS=True,
         MAIL_USERNAME=os.getenv('EMAIL'),
-        MAIL_PASSWORD=os.getenv('EMAIL_PASSWORD'),  # must be a Gmail app password
+        MAIL_PASSWORD=os.getenv('EMAIL_PASSWORD'),
         MAIL_DEFAULT_SENDER=os.getenv('EMAIL'),
     )
     mail.init_app(app)

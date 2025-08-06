@@ -23,16 +23,12 @@ dangerous_patterns = ['system:', 'ignore previous', 'act as']
 
  # Allow safe tags used by Markdown + code rendering
 ALLOWED_TAGS = set(bleach.sanitizer.ALLOWED_TAGS).union({'p', 'br', 'pre', 'code', 'strong', 'em'})
-#
-# # Allow specific attributes only for certain tags
-ALLOWED_ATTRIBUTES = {
-    'code': ['class']
-}
+
 
 chatbot = Blueprint('chatbot', __name__, url_prefix='')
 
 @chatbot.route('/chatbot', methods=['POST'])
-@limiter.limit("5 per minute")
+@limiter.limit("0 per minute")
 def chatbot_route():
     if not current_user.is_authenticated:
         return jsonify({'response': 'Sorry please sign in first to use the chatbot.'})
@@ -65,7 +61,7 @@ def chatbot_route():
             raw_html = markdown.markdown(bot_response, extensions=["fenced_code", "codehilite"])
 
             # Step 4: Sanitize Markdown HTML to allow only safe tags
-            safe_html = bleach.clean(raw_html, tags=ALLOWED_TAGS, attributes=ALLOWED_ATTRIBUTES)
+            safe_html = bleach.clean(raw_html, tags=ALLOWED_TAGS)
 
             print("Sanitized Bot Response:", safe_html)
             return jsonify({'response': safe_html})
