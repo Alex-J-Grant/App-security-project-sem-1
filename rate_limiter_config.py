@@ -2,7 +2,6 @@ from flask_limiter import Limiter
 from flask_login import current_user
 from flask import session
 
-#FIXXX when have session id
 def get_rate_limit_key():
     try:
         return f"user:{current_user.id}"

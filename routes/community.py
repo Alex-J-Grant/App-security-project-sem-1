@@ -104,7 +104,7 @@ def create_community_route():
 
 
 
-        #put them into loop so i can repeat meta data removal
+        #put them into list so i can repeat meta data removal
         file_list = [banner_file,icon_file]
         #Store file names for uploading to sql
         file_names = []
@@ -118,7 +118,7 @@ def create_community_route():
                 ext = os.path.splitext(orig_filename)[1].lower()  # e.g., '.png'
 
                 if ext not in ['.png', '.jpg', '.jpeg', '.gif']:
-                    flash('Please upload image files only2', 'danger')
+                    flash('Please upload image files only', 'danger')
                     return render_template('create_community.html', form=form)
 
                 # Strip metadata in-memory
@@ -155,8 +155,6 @@ def create_community_route():
             flash("Community created successfully", "success")
             return redirect(url_for("home.home"))
         except Exception as e:
-            #log it later
-            print(e)
             # Delete saved files
             for path in saved_file_paths:
                 if os.path.exists(path):

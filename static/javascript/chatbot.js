@@ -3,7 +3,9 @@ import { sanitizeInput } from '/static/javascript/sanitize.js';
             const chatbox = document.getElementById('chatboxer');
             chatbox.style.display = 'block';  // Open chatbox
         });
+
         const csrfToken = document.querySelector('meta[name="csrf-token"]')?.getAttribute('content');
+
         document.getElementById('x').addEventListener('click', function() {
             const chatbox = document.getElementById('chatboxer');
             chatbox.style.display = 'none';  // Close chatbox

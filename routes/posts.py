@@ -127,9 +127,7 @@ def upload_post():
             flash("Post uploaded successfully", "success")
             return redirect(url_for('home.home'))
         except Exception as e:
-            #log later
-            print(e)
-            # Delete saved files
+            # Delete saved files if exists, if an exception occurs
             if os.path.exists(filepath):
                 os.remove(filepath)
             flash("Sorry something went wrong please try again later.", "danger")
