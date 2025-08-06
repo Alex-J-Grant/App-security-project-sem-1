@@ -6,8 +6,8 @@ import os, uuid, bleach
 from forms.communityforms import CreateCommunityForm
 from extensions import db
 from sqlalchemy import text
-from flask_login import login_required
-
+from flask_login import login_required,current_user
+from helperfuncs.post_likes import has_liked_post
 from helperfuncs.validation import allowed_mime_type, virus_check
 community = Blueprint('community',__name__,url_prefix='/communities')
 create_community = Blueprint('create_community',__name__)
@@ -79,7 +79,8 @@ def community_route(subreddit_name):
             'subcommunity_pfp': url_for('static', filename=f'images/profile_pictures/{row.subcommunity_pfp}') if row.subcommunity_pfp else '/static/images/SC_logo.png',
             'created_at': row.created_at.strftime('%Y-%m-%d %H:%M:%S'),
             'likes': row.likes,
-            'comments': row.comments
+            'comments': row.comments,
+            'user_liked': has_liked_post(current_user.id,row.id)
         })
     # Execute the query using SQLAlchemy Core
 

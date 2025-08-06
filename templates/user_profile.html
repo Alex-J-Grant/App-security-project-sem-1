@@ -1,0 +1,227 @@
+{% extends "base.html" %}
+
+{% block title %}{{ user.fname }} {{ user.lname }} (@{{ user.username }}){% endblock %}
+
+{% block content %}
+<div class="container py-4">
+    <!-- Flash Messages -->
+    {% with messages = get_flashed_messages(with_categories=true) %}
+    {% if messages %}
+    {% for category, message in messages %}
+    <div class="alert alert-{{ category }} alert-dismissible fade show" role="alert">
+        {{ message }}
+        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+    </div>
+    {% endfor %}
+    {% endif %}
+    {% endwith %}
+
+    <!-- User Profile Header -->
+    <div class="card mb-4">
+        <div class="card-body">
+            <div class="row align-items-center">
+                <div class="col-md-3 text-center">
+                    <!-- Profile Picture -->
+                    <img src="{{ user.userpfp }}" class="rounded-circle img-fluid mb-3"
+                         style="width: 150px; height: 150px; object-fit: cover;" alt="Profile Picture">
+                </div>
+                <div class="col-md-6">
+                    <!-- User Info -->
+                    <h2 class="mb-1">{{ user.fname }} {{ user.lname }}</h2>
+                    <h5 class="text-muted mb-3">@{{ user.username }}</h5>
+
+                    <!-- Stats -->
+                    <div class="row text-center">
+                        <div class="col-4">
+                            <strong class="d-block">{{ user.total_posts }}</strong>
+                            <small class="text-muted">Posts</small>
+                        </div>
+                        <div class="col-4">
+                            <strong class="d-block">{{ user.friend_count }}</strong>
+                            <small class="text-muted">Friends</small>
+                        </div>
+                        <div class="col-4">
+                            <strong class="d-block">{{ user.total_likes }}</strong>
+                            <small class="text-muted">Total Likes</small>
+                        </div>
+                    </div>
+
+                    <div class="mt-3">
+                        <small class="text-muted">
+                            <i class="fas fa-calendar"></i> Joined {{ user.created_at }}
+                        </small>
+                    </div>
+                </div>
+                <div class="col-md-3">
+                    <!-- Action Buttons -->
+                    {% if current_user.is_authenticated and user.friendship_status != 'self' %}
+                    <div class="d-grid gap-2">
+                        {% if user.friendship_status == 'none' %}
+                        <a href="{{ url_for('friends.send_friend_request', user_id=user.id) }}"
+                           class="btn btn-primary">
+                            <i class="fas fa-user-plus"></i> Add Friend
+                        </a>
+                        {% elif user.friendship_status == 'request_sent' %}
+                        <button class="btn btn-warning" disabled>
+                            <i class="fas fa-clock"></i> Request Sent
+                        </button>
+                        {% elif user.friendship_status == 'request_received' %}
+                        <a href="{{ url_for('friends.view_requests') }}" class="btn btn-info">
+                            <i class="fas fa-user-check"></i> Accept Request
+                        </a>
+                        {% elif user.friendship_status == 'friends' %}
+                        <button class="btn btn-success" disabled>
+                            <i class="fas fa-user-friends"></i> Friends
+                        </button>
+                        {% endif %}
+
+                        {% if user.can_message %}
+                        <a href="{{ url_for('friends.chat', friend_id=user.id) }}"
+                           class="btn btn-outline-primary">
+                            <i class="fas fa-comments"></i> Message
+                        </a>
+                        {% endif %}
+                    </div>
+                    {% elif not current_user.is_authenticated %}
+                    <div class="d-grid gap-2">
+                        <a href="{{ url_for('account.login') }}" class="btn btn-primary">
+                            Login to Connect
+                        </a>
+                    </div>
+                    {% else %}
+                    <!-- This is the current user's own profile -->
+                    <div class="d-grid gap-2">
+                        <a href="{{ url_for('profile.view') }}" class="btn btn-outline-secondary">
+                            <i class="fas fa-edit"></i> Edit Profile
+                        </a>
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Posts Section -->
+    <div class="row">
+        <div class="col-12">
+            <h4 class="mb-3">
+                <i class="fas fa-images"></i> Posts by {{ user.username }}
+                <span class="badge bg-secondary">{{ user.total_posts }}</span>
+            </h4>
+
+            {% if posts %}
+            {% for post in posts %}
+            <div class="card post-card mb-4">
+                <!-- Post Header -->
+                <div class="post-header d-flex align-items-center p-3 border-bottom">
+                    <img src="{{ post.subcommunity_pfp }}" class="avatar me-3" alt="Community">
+                    <div>
+                        <a href="/communities/{{ post.subcommunity_name }}" class="post_link">
+                            <div class="username">c/{{ post.subcommunity_name }}</div>
+                        </a>
+                        <div class="timestamp">{{ post.created_at }}</div>
+                    </div>
+                </div>
+
+                <a href="/view_post/{{ post.id }}" class="post_link">
+                    <!-- Post Content -->
+                    <div class="card-body">
+                        <h5 class="card-title">{{ post.title }}</h5>
+                        <p class="card-text">{{ post.description }}</p>
+
+                        {% if post.image_url %}
+                        <img src="{{ post.image_url }}" alt="Post Image"
+                             class="post-img mt-3 rounded" style="max-width: 100%; height: auto;">
+                        {% endif %}
+                    </div>
+                </a>
+
+                <!-- Like and Comment Counters -->
+                <div class="card-footer d-flex justify-content-start gap-4 text-muted small">
+                    <div class="d-flex align-items-center">
+                        <button class="btn p-0 d-flex align-items-center like-btn {% if post.user_liked %} text-primary {% endif %}"
+                                data-post-id="{{ post.id }}"
+                                data-liked="{{ 'true' if post.user_liked else 'false' }}"
+                                aria-label="like" style="background:none; border:none;">
+                            {% if post.user_liked %}
+                            <i class="bi bi-hand-thumbs-up-fill fs-5 me-1"></i>
+                            {% else %}
+                            <i class="bi bi-hand-thumbs-up fs-5 me-1"></i>
+                            {% endif %}
+                            <span class="like-count">{{ post.likes }}</span>
+                        </button>
+                    </div>
+                    <div class="d-flex align-items-center">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor"
+                             class="bi bi-chat-dots me-1" viewBox="0 0 16 16">
+                            <path d="M5 8a1 1 0 1 1-2 0 1 1 0 0 1 2 0m4 0a1 1 0 1 1-2 0 1 1 0 0 1 2 0m3 1a1 1 0 1 0 0-2 1 1 0 0 0 0 2"/>
+                            <path d="m2.165 15.803.02-.004c1.83-.363 2.948-.842 3.468-1.105A9 9 0 0 0 8 15c4.418 0 8-3.134 8-7s-3.582-7-8-7-8 3.134-8 7c0 1.76.743 3.37 1.97 4.6a10.4 10.4 0 0 1-.524 2.318l-.003.011a11 11 0 0 1-.244.637c-.079.186.074.394.273.362a22 22 0 0 0 .693-.125m.8-3.108a1 1 0 0 0-.287-.801C1.618 10.83 1 9.468 1 8c0-3.192 3.004-6 7-6s7 2.808 7 6-3.004 6-7 6a8 8 0 0 1-2.088-.272 1 1 0 0 0-.711.074c-.387.196-1.24.57-2.634.893a11 11 0 0 0 .398-2"/>
+                        </svg>
+                        <span>{{ post.comments }}</span>
+                    </div>
+                </div>
+            </div>
+            {% endfor %}
+            {% else %}
+            <div class="text-center py-5">
+                <div class="mb-3">
+                    <i class="fas fa-images fa-3x text-muted"></i>
+                </div>
+                <h5 class="text-muted">No posts yet</h5>
+                <p class="text-muted">{{ user.username }} hasn't shared any posts.</p>
+            </div>
+            {% endif %}
+        </div>
+    </div>
+
+    <!-- Back Button -->
+    <div class="mt-4">
+        <a href="{{ request.referrer or url_for('home.home') }}" class="btn btn-secondary">
+            <i class="fas fa-arrow-left"></i> Back
+        </a>
+    </div>
+</div>
+<script src="{{ url_for('static', filename='javascript/liking.js') }}"></script>
+<style>
+    .post-card {
+        transition: all 0.3s ease;
+        border: 1px solid #e3e6ea;
+    }
+
+    .post-card:hover {
+        box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+        transform: translateY(-2px);
+    }
+
+    .post_link {
+        text-decoration: none;
+        color: inherit;
+    }
+
+    .post_link:hover {
+        color: inherit;
+    }
+
+    .avatar {
+        width: 50px;
+        height: 50px;
+        object-fit: cover;
+    }
+
+    .username {
+        font-weight: 600;
+        color: #495057;
+    }
+
+    .timestamp {
+        font-size: 0.85rem;
+        color: #6c757d;
+    }
+
+    .post-img {
+        max-height: 400px;
+        width: 100%;
+        object-fit: cover;
+    }
+</style>
+{% endblock %}

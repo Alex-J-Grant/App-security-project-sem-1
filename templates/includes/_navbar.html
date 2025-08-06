@@ -13,29 +13,43 @@
 
         <div class="collapse navbar-collapse d-flex align-items-center" id="collapsibleNavbar">
             <!-- Left links -->
-            <ul class="navbar-nav">
+            <ul class="navbar-nav me-auto">
                 {% if role == "Admin" %}
                 <li class="nav-item">
                     <a class="nav-link text-white" href="/seller" style="font-size: 1.1rem;">Admin Board</a>
                 </li>
                 {% else %}
                 <li class="nav-item dropdown">
-                    <a class="nav-link dropdown-toggle text-white" href="#" role="button" data-bs-toggle="dropdown"
-                       aria-expanded="false" style="font-size: 1.1rem;">Pages</a>
-                    <ul class="dropdown-menu">
+                    <a class="nav-link dropdown-toggle text-white" href="#" id="pagesDropdown" role="button"
+                       data-bs-toggle="dropdown" aria-expanded="false" style="font-size: 1.1rem;">Pages</a>
+                    <ul class="dropdown-menu" aria-labelledby="pagesDropdown">
                         <li><a class="dropdown-item" href="/upload_post">Upload Post</a></li>
                         <li><a class="dropdown-item" href="/create_community">Create Community</a></li>
                     </ul>
                 </li>
                 {% endif %}
-                <li class="nav-item">
-                    <a class="nav-link text-white" href="/review" style="font-size: 1.1rem;">Reviews</a>
+
+                <!-- Add Friends Navigation -->
+                {% if current_user.is_authenticated %}
+                <li class="nav-item dropdown">
+                    <a class="nav-link dropdown-toggle text-white" href="#" id="friendsDropdown" role="button"
+                       data-bs-toggle="dropdown" aria-expanded="false" style="font-size: 1.1rem;">Friends</a>
+                    <ul class="dropdown-menu" aria-labelledby="friendsDropdown">
+                        <li><a class="dropdown-item" href="{{ url_for('friends.search_users') }}">Find Friends</a></li>
+                        <li><a class="dropdown-item" href="{{ url_for('friends.friends_list') }}">My Friends</a></li>
+                        <li><a class="dropdown-item" href="{{ url_for('friends.view_requests') }}">Friend Requests</a>
+                        </li>
+                        <li><a class="dropdown-item" href="{{ url_for('friends.messages_overview') }}">Messages</a></li>
+                    </ul>
                 </li>
+                {% endif %}
+
             </ul>
 
             <!-- Centered search -->
-            <div class="mx-auto flex-grow-1 d-flex justify-content-center" style="max-width: 600px; min-width: 200px;">
-                <div class="position-relative w-100">
+            <!-- Centered search -->
+            <div class="search-container flex-fill d-flex justify-content-center px-3">
+                <div class="position-relative" style="width:100%; max-width:600px;">
                     <input
                             id="global-search"
                             class="form-control form-control-lg"
@@ -43,8 +57,8 @@
                             placeholder="Search communities or users..."
                             aria-label="Search"
                             autocomplete="off"
-                            style="font-size: 1.1rem; border-radius: 0.4rem;">
-                    <div  id="suggestions" class="list-group position-absolute w-100"
+                            style="font-size: 1.1rem; border-radius: 0.4rem; width:100%;">
+                    <div id="suggestions" class="list-group position-absolute w-100"
                          style="z-index:1050; top:100%; display:none; background: white;">
                         <!-- filled dynamically -->
                     </div>
@@ -54,37 +68,41 @@
             <!-- Right account -->
             <ul class="navbar-nav">
                 <li class="nav-item dropdown">
-                    <a class="nav-link dropdown-toggle text-white" href="#" role="button" data-bs-toggle="dropdown"
-                       aria-expanded="false" style="font-size: 1.1rem;">Your Account</a>
-                    <ul class="dropdown-menu dropdown-menu-end">
-                        <li>
-                            <hr class="dropdown-divider">
-                        </li>
+                    <a class="nav-link dropdown-toggle text-white" href="#" id="accountDropdown" role="button"
+                       data-bs-toggle="dropdown" aria-expanded="false" style="font-size: 1.1rem;">Your Account</a>
+                    <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="accountDropdown">
                         {% if current_user.is_authenticated %}
-                        <li><a class="dropdown-item" href="{{ url_for('profile.view') }}">Profile</a></li>
-                        <li><a class="dropdown-item" href="{{ url_for('account.logout') }}">Logout</a></li>
-                        {% else %}
-                        <li><a class="dropdown-item" href="{{ url_for('account.login') }} ">Login</a></li>
-                        <li><a class="dropdown-item" href="{{ url_for('account.create') }} ">Sign Up</a></li>
-                        {% endif %}
-                        {% if role == 'Admin' %}
-                        <li><a class="dropdown-item" href="fixme">Admin</a></li>
-                        {% endif %}
+                        <li><h6 class="dropdown-header">Signed in as: {{ current_user.username }}</h6></li>
                         <li>
                             <hr class="dropdown-divider">
                         </li>
+                        <li><a class="dropdown-item" href="{{ url_for('profile.view') }}">
+                            <i class="bi bi-person-circle"></i> Profile</a></li>
+                        <li><a class="dropdown-item" href="{{ url_for('account.logout') }}">
+                            <i class="bi bi-box-arrow-right"></i> Logout</a></li>
+                        {% else %}
+                        <li><a class="dropdown-item" href="{{ url_for('account.login') }}">
+                            <i class="bi bi-box-arrow-in-right"></i> Login</a></li>
+                        <li><a class="dropdown-item" href="{{ url_for('account.create') }}">
+                            <i class="bi bi-person-plus"></i> Sign Up</a></li>
+                        {% endif %}
+
                         {% if role == 'Admin' %}
+                        <li>
+                            <hr class="dropdown-divider">
+                        </li>
+                        <li><h6 class="dropdown-header">Admin</h6></li>
+                        <li><a class="dropdown-item" href="fixme">Admin Panel</a></li>
                         <li><a class="dropdown-item" href="/faq/manage">Manage FAQ</a></li>
-                        <li><a class="dropdown-item" href="/review/manage">Manage Review</a></li>
                         <li><a class="dropdown-item" href="/contact/manage">Manage Contact</a></li>
                         {% else %}
-                        <li><a class="dropdown-item" href="/faq">FAQ</a></li>
-                        <li><a class="dropdown-item" href="/review/update">Update Review</a></li>
-                        <li><a class="dropdown-item" href="/contact/add">Contact</a></li>
-                        {% endif %}
                         <li>
                             <hr class="dropdown-divider">
                         </li>
+                        <li><h6 class="dropdown-header">Help & Support</h6></li>
+                        <li><a class="dropdown-item" href="/faq">FAQ</a></li>
+                        <li><a class="dropdown-item" href="/contact/add">Contact</a></li>
+                        {% endif %}
                     </ul>
                 </li>
             </ul>
@@ -92,5 +110,4 @@
     </div>
     <script src="{{ url_for('static', filename='javascript/search_suggest.js') }}" defer></script>
 </nav>
-
 

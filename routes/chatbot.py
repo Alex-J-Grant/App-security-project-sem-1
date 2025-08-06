@@ -2,9 +2,7 @@ from flask import Flask
 import shelve
 import html
 from flask import *
-from functools import *
 from flask_mail import Mail, Message
-from ff3 import FF3Cipher
 import os
 import google.generativeai as genai
 from datetime import datetime
@@ -13,7 +11,7 @@ import bleach
 # from routes import
 from flask_limiter import Limiter
 from flask_login import login_required, current_user
-
+from rate_limiter_config import limiter
 #set max length for inputs
 MAX_LENGTH = 255
 
@@ -34,6 +32,7 @@ ALLOWED_ATTRIBUTES = {
 chatbot = Blueprint('chatbot', __name__, url_prefix='')
 
 @chatbot.route('/chatbot', methods=['POST'])
+@limiter.limit("5 per minute")
 def chatbot_route():
     if not current_user.is_authenticated:
         return jsonify({'response': 'Sorry please sign in first to use the chatbot.'})

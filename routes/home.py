@@ -4,6 +4,9 @@ from flask import Blueprint, render_template, url_for
 from extensions import db
 from sqlalchemy import text
 import os
+from helperfuncs.post_likes import has_liked_post
+from helperfuncs.email_sender import send_email
+from flask_login import current_user
 UPLOAD_FOLDER_POST = 'static/images/post_images'
 
 # Define the blueprint
@@ -46,7 +49,8 @@ def home():
             'subcommunity_name':row.subcommunity_name,
             'created_at': row.created_at.strftime('%Y-%m-%d %H:%M:%S'),
             'likes': row.likes,
-            'comments': row.comments
+            'comments': row.comments,
+            'user_liked':has_liked_post(current_user.id,row.id)
         })
 
     return render_template('home.html', posts=posts)
