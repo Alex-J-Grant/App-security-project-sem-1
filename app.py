@@ -14,16 +14,16 @@ from routes.profile import *
 from routes.search import *
 from routes.friends import friends  # ADD THIS LINE
 from routes.users import users  # ADD THIS LINE
+from routes.admin import adminbp
 from flask_session import Session
 from flask_wtf.csrf import CSRFProtect
 from flask_talisman import Talisman
-import secrets
-from flask import g
 from models.user import User  # ADD THIS LINE
 from models.session import *
 from security.friends_owasp_security import initialize_friends_security  # ADD THIS LINE
 from routes.comments import comments
-
+from dotenv import load_dotenv
+from datetime import timedelta
 
 def create_app():
     app =Flask(__name__, static_folder = "static")
@@ -40,7 +40,15 @@ def create_app():
         SESSION_COOKIE_SAMESITE = 'Lax',
         REMEMBER_COOKIE_SECURE = True,
         SESSION_TYPE = 'sqlalchemy',
-        SESSION_SQLALCHEMY = db
+        SESSION_SQLALCHEMY = db,
+        MAIL_SERVER='smtp.gmail.com',
+        MAIL_PORT=587,
+        MAIL_USE_SSL=False,
+        MAIL_USE_TLS=True,
+        MAIL_USERNAME=os.getenv('EMAIL'),
+        MAIL_PASSWORD=os.getenv('EMAIL_PASSWORD'),  # must be a Gmail app password
+        MAIL_DEFAULT_SENDER=os.getenv('EMAIL'),
+        REMEMBER_COOKIE_DURATION = timedelta(days=7)
 
 
     )
@@ -81,21 +89,12 @@ def create_app():
     sess = Session(app)
     # Enable CSRF protection
     csrf = CSRFProtect(app)
-    app.config.update(
-        MAIL_SERVER='smtp.gmail.com',
-        MAIL_PORT=587,
-        MAIL_USE_SSL=False,
-        MAIL_USE_TLS=True,
-        MAIL_USERNAME=os.getenv('EMAIL'),
-        MAIL_PASSWORD=os.getenv('EMAIL_PASSWORD'),  # must be a Gmail app password
-        MAIL_DEFAULT_SENDER=os.getenv('EMAIL'),
-    )
     mail.init_app(app)
 
     limiter.init_app(app)
 
 
-    # register blueprints here for your routes
+        # register blueprints here for your routes
     app.register_blueprint(account)
     app.register_blueprint(homebp)
     app.register_blueprint(chatbot)
@@ -110,6 +109,7 @@ def create_app():
     app.register_blueprint(users)  # ADD THIS LINE
     app.register_blueprint(comments)
     app.register_blueprint(like_bp)
+    app.register_blueprint(adminbp)
     register_error_handlers(app)
 
     # Initialize OWASP security features

@@ -1,11 +1,11 @@
 from flask import Blueprint, render_template, redirect, url_for, flash
+from helperfuncs.email_sender import send_email
 from helperfuncs.logger import main_logger
 from flask_login import login_required, current_user, logout_user
 from forms.profileforms import Editprofile, Delprofile
 from extensions import db
 from models.user import User
 from helperfuncs.rba import *
-
 
 profile = Blueprint('profile', __name__, url_prefix= '/profile')
 
@@ -63,13 +63,6 @@ def delete():
         return redirect(url_for('account.login'))
     return render_template('delprofile.html', form=form)
 
-
-
-
-@profile.route('/reset', methods = ['GET', 'POST'])
-@login_required
-def forgetpw():
-    return redirect(url_for('profile.view'))
 
 
 # to be deleted

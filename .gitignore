@@ -8,3 +8,4 @@ logs
 .idea
 community_banners
 post_images
+.env

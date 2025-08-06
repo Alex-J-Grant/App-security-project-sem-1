@@ -1,0 +1,45 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="container mt-4">
+  <h2>Ban Requests</h2>
+
+  {% if ban_requests %}
+  <div class="row">
+    {% for ban in ban_requests %}
+    <div class="col-md-4 mb-4">
+      <div class="card shadow-sm h-100">
+        <div class="card-body">
+          <p class="card-text">
+
+            <strong>Reported By:</strong> {{ ban.user.username or 'Unknown User' }}<br>
+            <strong>User:</strong> {{ ban.user.username }}<br>
+            <strong>Reason:</strong> {{ ban.reason }}<br>
+            <strong>Created At:</strong> {{ ban.created_at.strftime('%Y-%m-%d %H:%M:%S') }}
+          </p>
+        </div>
+        <div class="card-footer">
+          {% if ban.handled %}
+          <span class="badge bg-success">Handled</span>
+          {% else %}
+          <form method="POST" action="{{ url_for('admin.banuser', ban_id=ban.ban_id) }}"
+            class="d-flex justify-content-between">
+            <input type="hidden" name="decision" value="approve">
+            <button type="submit" class="btn btn-sm btn-success">Approve</button>
+          </form>
+          <form method="POST" action="{{ url_for('admin.nobanuser', ban_id=ban.ban_id) }}"
+            class="d-flex justify-content-between mt-1">
+            <input type="hidden" name="decision" value="reject">
+            <button type="submit" class="btn btn-sm btn-danger">Reject</button>
+          </form>
+          {% endif %}
+        </div>
+      </div>
+    </div>
+    {% endfor %}
+  </div>
+  {% else %}
+  <p>No ban requests at this time.</p>
+  {% endif %}
+</div>
+{% endblock %}

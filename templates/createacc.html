@@ -83,6 +83,15 @@
     </p>
 
     <p>
+        {{ form.country.label }}<br>
+        {{ form.country() }}<br>
+        {% for error in form.country.errors %}
+            <span style="color: red;">{{ error }}</span>
+        {% endfor %}
+    </p>
+
+
+    <p>
         {{ form.password.label }}<br>
         {{ form.password() }}<br>
         {% for error in form.password.errors %}
