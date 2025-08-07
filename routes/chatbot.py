@@ -1,11 +1,8 @@
 from flask import Flask
-import shelve
 import html
 from flask import *
-from flask_mail import Mail, Message
 import os
 import google.generativeai as genai
-from datetime import datetime
 import markdown
 import bleach
 # from routes import
@@ -33,7 +30,6 @@ def chatbot_route():
     if not current_user.is_authenticated:
         return jsonify({'response': 'Sorry please sign in first to use the chatbot.'})
     if request.method == 'POST':
-        print("called chatbot")
         # Step 1: Sanitize user input (redundant safety against XSS)
         user_input = request.form['user_input']
         user_input = html.escape(user_input.strip())
@@ -58,7 +54,7 @@ def chatbot_route():
                     bot_response += chunk.text
 
             # Step 3: Convert Markdown to HTML
-            raw_html = markdown.markdown(bot_response, extensions=["fenced_code", "codehilite"])
+            raw_html = markdown.markdown(bot_response)
 
             # Step 4: Sanitize Markdown HTML to allow only safe tags
             safe_html = bleach.clean(raw_html, tags=ALLOWED_TAGS)
