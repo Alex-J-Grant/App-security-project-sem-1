@@ -1,0 +1,38 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="container py-4">
+  <h2 class="mb-4">All Posts</h2>
+
+  {% if posts %}
+  <div class="row row-cols-1 row-cols-md-2 row-cols-lg-3 g-4">
+    {% for post in posts %}
+    <div class="col">
+      <div class="card h-100 shadow-sm">
+        {% if post.image_url %}
+        <img src="{{ post.image_url }}" class="card-img-top" alt="{{ post.title }}">
+        {% else %}
+        <img src="{{ url_for('static', filename='images/default_post.png') }}" class="card-img-top" alt="No image">
+        {% endif %}
+        <div class="card-body">
+          <h5 class="card-title">{{ post.title }}</h5>
+          <p class="card-text">{{ post.description }}</p>
+        </div>
+        <div class="card-footer text-muted d-flex justify-content-between align-items-center">
+          <small>Created: {{ post.created_at }}</small>
+          <small>👍 {{ post.likes }} | 💬 {{ post.comments }}</small>
+          <form method="POST" action="{{ url_for('admin.delpost', post_id=post.id) }}" class="ms-3">
+            {{ form.hidden_tag() }}
+            <button type="submit" class="btn btn-danger btn-sm">Delete Post</button>
+          </form>
+        </div>
+      </div>
+    </div>
+    {% endfor %}
+  </div>
+  {% else %}
+  <p class="text-muted">No posts found.</p>
+  {% endif %}
+</div>
+{% endblock %}
+

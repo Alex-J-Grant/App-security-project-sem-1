@@ -1,0 +1,38 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<style>
+  .dashboard {
+    display: flex;
+    gap: 20px;
+    justify-content: center;
+    margin-top: 50px;
+    flex-wrap: wrap;
+  }
+
+  .box {
+    flex: 1 1 200px;
+    max-width: 250px;
+    height: 150px;
+    background-color: #3498db;
+    color: white;
+    text-align: center;
+    line-height: 150px;
+    font-size: 24px;
+    font-weight: bold;
+    border-radius: 8px;
+    text-decoration: none;
+    transition: background-color 0.3s ease;
+  }
+
+  .box:hover {
+    background-color: #2980b9;
+  }
+</style>
+
+<div class="dashboard">
+  <a href="{{ url_for('admin.viewusers') }}" class="box">Users</a>
+  <a href="{{ url_for('admin.viewposts') }}" class="box">Posts</a>
+  <a href="{{ url_for('admin.banreq') }}" class="box">Ban Requests</a>
+</div>
+{% endblock %}

@@ -137,3 +137,10 @@ def get_friendship_status(current_user_id, target_user_id):
     except Exception as e:
         main_logger.error(f'Error getting friendship status: {str(e)}')
         return 'none'
+
+
+
+
+
+
+

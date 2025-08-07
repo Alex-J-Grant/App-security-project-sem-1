@@ -25,6 +25,17 @@ class Editprofile(FlaskForm):
         existing = User.query.filter_by(username=field.data).first()
         if existing and existing.id != current_user.id:
             raise ValidationError('This is already taken')
+    def validate_telno(self, field):
+        existing = User.query.filter_by(telno=field.data).first()
+        if existing and existing.id != current_user.id:
+            raise ValidationError('This is already taken')
+    def validate_email(self, field):
+        existing = User.query.filter_by(email=field.data).first()
+        if existing and existing.id != current_user.id:
+            raise ValidationError('This is already taken')
+
+
+
 
 
 class Delprofile(FlaskForm):
