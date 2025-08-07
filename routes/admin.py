@@ -30,6 +30,7 @@ def viewusers():
 @admin_required
 def userposts(user_id):
     user = User.query.get_or_404(user_id)
+    form = Emptyform()
     query = text(
         """
         SELECT POST_ID, USER_ID, COMM_ID, TITLE, IMAGE, DESCRIPT, LIKE_COUNT, COMMENT_COUNT, created_at
@@ -40,7 +41,7 @@ def userposts(user_id):
     )
     result = db.session.execute(query, {'user_id': user_id})
     posts = result.fetchall()
-    return render_template('specificuserposts.html', posts = posts, user = user)
+    return render_template('specificuserposts.html', posts = posts, user = user, form = form)
     
 
 @adminbp.route('/users/delete/<user_id>', methods = ['POST'])
