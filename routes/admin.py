@@ -118,10 +118,9 @@ def viewposts():
             'id': row.POST_ID,
             'title': row.TITLE,
             'description': row.DESCRIPT,
-            'image_url':  url_for('static', filename=f'images/post_images/{row.image_url}') if row.image_url else None,
+            'image_url':  url_for('static', filename=f'images/post_images/{row.IMAGE}') if row.IMAGE else None,
             'created_at': row.created_at.strftime('%Y-%m-%d %H:%M:%S'),
-            'likes': row.LIKES,
-            'comments': row.COMMENTS,
+            'likes': row.LIKE_COUNT
         })
 
  
