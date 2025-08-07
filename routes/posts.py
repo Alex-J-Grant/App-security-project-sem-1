@@ -81,33 +81,35 @@ def upload_post():
 
 
         try:
-            #get the file extension
-            orig_filename = image_file.filename
-            ext = os.path.splitext(orig_filename)[1].lower()  # e.g., '.png'
+            if image_file:
+                #get the file extension
+                orig_filename = image_file.filename
+                ext = os.path.splitext(orig_filename)[1].lower()  # e.g., '.png'
 
-            #if somehow got past everything else
-            if ext not in ['.png', '.jpg', '.jpeg', '.gif']:
-                flash('Please upload image files only', 'danger')
-                return render_template('upload_post.html', form=form)
+                #if somehow got past everything else
+                if ext not in ['.png', '.jpg', '.jpeg', '.gif']:
+                    flash('Please upload image files only', 'danger')
+                    return render_template('upload_post.html', form=form)
 
-            # Strip metadata in-memory
-            with Image.open(image_file.stream) as img:
-                data = img.getdata()
-                clean_img = Image.new(img.mode, img.size)
-                clean_img.putdata(data)
+                # Strip metadata in-memory
+                with Image.open(image_file.stream) as img:
+                    data = img.getdata()
+                    clean_img = Image.new(img.mode, img.size)
+                    clean_img.putdata(data)
 
-                # Ensure correct format when saving
-                format_map = {
-                    '.jpg': 'JPEG',
-                    '.jpeg': 'JPEG',
-                    '.png': 'PNG',
-                    '.gif': 'GIF'
-                }
+                    # Ensure correct format when saving
+                    format_map = {
+                        '.jpg': 'JPEG',
+                        '.jpeg': 'JPEG',
+                        '.png': 'PNG',
+                        '.gif': 'GIF'
+                    }
 
-                filename = uuid.uuid4().hex + ext
-                filepath = os.path.join(UPLOAD_FOLDER_POST, filename)
-                clean_img.save(filepath, format=format_map[ext])
-
+                    filename = uuid.uuid4().hex + ext
+                    filepath = os.path.join(UPLOAD_FOLDER_POST, filename)
+                    clean_img.save(filepath, format=format_map[ext])
+            else:
+                filename = None
             # Insert into DB using parameterized query
             stmt = text("""
                 INSERT INTO POST (POST_ID, USER_ID, COMM_ID, TITLE, IMAGE, DESCRIPT)
@@ -127,9 +129,7 @@ def upload_post():
             flash("Post uploaded successfully", "success")
             return redirect(url_for('home.home'))
         except Exception as e:
-            #log later
-            print(e)
-            # Delete saved files
+            # Delete saved files if exists, if an exception occurs
             if os.path.exists(filepath):
                 os.remove(filepath)
             flash("Sorry something went wrong please try again later.", "danger")

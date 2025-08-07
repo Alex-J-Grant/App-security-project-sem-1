@@ -14,6 +14,7 @@ from routes.profile import *
 from routes.search import *
 from routes.friends import friends  # ADD THIS LINE
 from routes.users import users  # ADD THIS LINE
+from routes.pages import pages
 from routes.admin import adminbp
 from flask_session import Session
 from flask_wtf.csrf import CSRFProtect
@@ -107,6 +108,7 @@ def create_app():
     app.register_blueprint(search_bp)
     app.register_blueprint(friends)  # ADD THIS LINE
     app.register_blueprint(users)  # ADD THIS LINE
+    app.register_blueprint(pages)
     app.register_blueprint(comments)
     app.register_blueprint(like_bp)
     app.register_blueprint(adminbp)
@@ -120,4 +122,4 @@ def create_app():
 
 if __name__ == '__main__':
     app = create_app()
-    app.run(ssl_context=('cert.pem', 'key.pem'), debug=True)
+    app.run(ssl_context=('cert.pem', 'key.pem'))

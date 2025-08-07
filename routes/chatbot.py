@@ -1,11 +1,8 @@
 from flask import Flask
-import shelve
 import html
 from flask import *
-from flask_mail import Mail, Message
 import os
 import google.generativeai as genai
-from datetime import datetime
 import markdown
 import bleach
 # from routes import
@@ -23,11 +20,7 @@ dangerous_patterns = ['system:', 'ignore previous', 'act as']
 
  # Allow safe tags used by Markdown + code rendering
 ALLOWED_TAGS = set(bleach.sanitizer.ALLOWED_TAGS).union({'p', 'br', 'pre', 'code', 'strong', 'em'})
-#
-# # Allow specific attributes only for certain tags
-ALLOWED_ATTRIBUTES = {
-    'code': ['class']
-}
+
 
 chatbot = Blueprint('chatbot', __name__, url_prefix='')
 
@@ -37,7 +30,6 @@ def chatbot_route():
     if not current_user.is_authenticated:
         return jsonify({'response': 'Sorry please sign in first to use the chatbot.'})
     if request.method == 'POST':
-        print("called chatbot")
         # Step 1: Sanitize user input (redundant safety against XSS)
         user_input = request.form['user_input']
         user_input = html.escape(user_input.strip())
@@ -62,10 +54,10 @@ def chatbot_route():
                     bot_response += chunk.text
 
             # Step 3: Convert Markdown to HTML
-            raw_html = markdown.markdown(bot_response, extensions=["fenced_code", "codehilite"])
+            raw_html = markdown.markdown(bot_response)
 
             # Step 4: Sanitize Markdown HTML to allow only safe tags
-            safe_html = bleach.clean(raw_html, tags=ALLOWED_TAGS, attributes=ALLOWED_ATTRIBUTES)
+            safe_html = bleach.clean(raw_html, tags=ALLOWED_TAGS)
 
             print("Sanitized Bot Response:", safe_html)
             return jsonify({'response': safe_html})

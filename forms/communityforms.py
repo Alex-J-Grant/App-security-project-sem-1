@@ -5,24 +5,27 @@ from wtforms.validators import InputRequired, Length, Regexp,DataRequired,Valida
 from sqlalchemy import text
 from extensions import db
 from helperfuncs.validation import allowed_mime_type, virus_check
+from helperfuncs.logger import main_logger
+from flask_login import current_user
 #checks if there is already a community by that name
 def Duplicte_Comm_Name(form,field):
     name = field.data
     stmt = text("SELECT * FROM SUBCOMMUNITY WHERE NAME = :name")
     with db.engine.connect() as conn:
         result = conn.execute(stmt, {"name": name}).fetchone()
-    print(result)
     if result is not None:
         raise ValidationError("Community name already exists.")
 
 def MIME_CHECKER(form,field):
     file = field.data
     if not allowed_mime_type(file):
+        main_logger.warning(f"Attempt to bypass file restrictions on community upload by {current_user.username} {current_user.id}")
         raise ValidationError("Images only please (jpg, png, gif).")
 
 def VIRUS_CHECKER(form,field):
     file = field.data
     if virus_check(file) is not None:
+        main_logger.warning(f"Attempt to upload file with virus signatures on post upload by {current_user.username} {current_user.id}")
         raise ValidationError("Images only please (jpg, png, gif).")
 
 class CreateCommunityForm(FlaskForm):

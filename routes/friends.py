@@ -9,7 +9,7 @@ from forms.friendforms import SendMessageForm, SearchUserForm
 from helperfuncs.logger import main_logger
 from helperfuncs.uuidgen import gen_uuid
 from datetime import datetime
-
+from rate_limiter_config import limiter
 # Import all OWASP security features
 from security.friends_owasp_security import (
     # A01: Access Control
@@ -362,6 +362,7 @@ def messages_overview():
 @require_authentication
 @require_friendship
 @secure_headers
+@limiter.limit("1000 per minute")
 def chat(friend_id):
     """OWASP-secured chat interface"""
     # A03 & A05: Input validation
@@ -487,6 +488,7 @@ def send_message():
 @require_friendship
 @validate_internal_request()
 @secure_headers
+@limiter.limit("1000 per minute")
 def get_messages_api(friend_id):
     """OWASP-secured messages API for real-time chat"""
     try:

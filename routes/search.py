@@ -2,11 +2,12 @@ from flask import Blueprint, request, jsonify, render_template
 from sqlalchemy import text
 from extensions import db
 import html
-
+import bleach
 search_bp = Blueprint('search', __name__)
 
+
 def sanitize_query(q: str) -> str:
-    return html.escape(q.strip())[:100]  # limit length
+    return bleach.clean(q, tags=[])[:100]  # limit length
 
 @search_bp.route("/search_suggestions")
 def search_suggestions():
@@ -78,6 +79,7 @@ def search_suggestions():
 def search_page():
     q = request.args.get("q", "")
     q_clean = sanitize_query(q)
+    print(q_clean)
     users = []
     communities = []
     if q_clean:
@@ -98,8 +100,7 @@ def search_page():
                 ORDER BY NAME = :exact DESC, NAME LIKE :prefix DESC
                 LIMIT 10
             """), {"like_q": like_q, "exact": q_clean, "prefix": f"{q_clean}%"}).mappings().all()
-
     return render_template("search_results.html",
-                           query=q_clean,
+                           query=html.unescape(q_clean),
                            users=users,
                            communities=communities)

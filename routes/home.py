@@ -7,6 +7,8 @@ import os
 from helperfuncs.post_likes import has_liked_post
 from helperfuncs.email_sender import send_email
 from flask_login import current_user
+from helperfuncs.location_checker import get_country_from_ip, compare_country
+from flask import request
 UPLOAD_FOLDER_POST = 'static/images/post_images'
 
 # Define the blueprint

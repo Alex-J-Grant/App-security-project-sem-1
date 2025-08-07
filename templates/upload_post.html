@@ -58,14 +58,7 @@
         <button id="realSubmit" type="submit" style="display:none;"></button>
     </form>
 </div>
-<script>
-$(document).ready(function() {
-    $('.select2').select2({
-        placeholder: "Select a community",
-        allowClear: true
-    });
-});
-</script>
+
 <div class="modal fade" id="confirmModal" tabindex="-1" aria-labelledby="confirmModalLabel" aria-hidden="true">
         <div class="modal-dialog modal-dialog-centered">
             <div class="modal-content">
@@ -83,10 +76,6 @@ $(document).ready(function() {
             </div>
         </div>
     </div>
-
-    <script>
-        function submitForm() {
-          document.getElementById("realSubmit").click();
-        }
-    </script>
+    <script src="{{ url_for('static', filename='javascript/select2_dropdown.js') }}"></script>
+    <script src="{{ url_for('static', filename='javascript/form_confirm.js') }}"></script>
 {% endblock %}
