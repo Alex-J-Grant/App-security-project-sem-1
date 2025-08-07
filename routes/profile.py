@@ -1,11 +1,13 @@
 from flask import Blueprint, render_template, redirect, url_for, flash
+from helperfuncs.email_sender import send_email
 from helperfuncs.logger import main_logger
 from flask_login import login_required, current_user, logout_user
 from forms.profileforms import Editprofile, Delprofile
+from forms.userforms import Report
 from extensions import db
 from models.user import User
+from models.banreq import BanReq
 from helperfuncs.rba import *
-
 
 profile = Blueprint('profile', __name__, url_prefix= '/profile')
 
@@ -15,7 +17,6 @@ def view():
     main_logger.info('view profile')
     return render_template('viewprofile.html', username = current_user.username, fname = current_user.fname, lname = current_user.lname, gender = current_user.gender, telno = current_user.telno, postal = current_user.postal, address = current_user.address, email = current_user.email)
 
-# to be deleted
 @profile.route('/testing', methods = ['GET', 'POST'])
 @login_required
 def dump():
@@ -64,13 +65,21 @@ def delete():
         return redirect(url_for('account.login'))
     return render_template('delprofile.html', form=form)
 
-
-
-
-@profile.route('/reset', methods = ['GET', 'POST'])
+@profile.route('/reqban/<user_id>', methods = ['GET', 'POST'])
 @login_required
-def forgetpw():
-    return redirect(url_for('profile.view'))
+def requestban(user_id):
+    form = Report()
+    if form.validate_on_submit():
+        banrequest = BanReq(
+        userid = user_id,
+        reason = form.reason.data.strip()
+        )
+        db.session.add(banrequest)
+        db.session.commit()
+        flash('Ban request submitted')
+        return redirect(url_for('home.home'))
+    return render_template('requestban.html', form = form)
+
 
 
 # to be deleted

@@ -37,3 +37,13 @@ def send_email(message_body, rcv_email, name,type,country="",device=""):
                             \n\n If this wasn't you, please reset your password.")
         mail.send(msg)
 
+    if type == "forgetpw":
+        msg = Message(
+            "Social Commune Password Reset",
+            sender = os.getenv("Email"),
+            recipients = [rcv_email],
+
+        )
+        msg.body = (f"Hello {name}, here is your password reset link {message_body}")
+        
+        mail.send(msg)

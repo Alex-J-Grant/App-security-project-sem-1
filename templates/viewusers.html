@@ -1,0 +1,46 @@
+{% extends "base.html" %}
+
+{% block title %}User Management{% endblock %}
+
+{% block content %}
+<h1>Users</h1>
+
+<div class="row">
+  {% for user in users %}
+  <div class="col-md-4 mb-4">
+    <div class="card h-100">
+      <div class="card-body d-flex flex-column">
+        <h5 class="card-title">
+          <a href="{{ url_for('admin.userposts', user_id=user.id) }}">
+            {{ user.username }}
+          </a>
+        </h5>
+        <p class="card-text mb-1"><strong>Email:</strong> {{ user.email }}</p>
+        <p class="card-text mb-1"><strong>Name:</strong> {{ user.fname }} {{ user.lname }}</p>
+        <p class="card-text mb-1"><strong>Gender:</strong> {{ user.gender }}</p>
+        <p class="card-text mb-1"><strong>DOB:</strong> {{ user.dob.strftime('%Y-%m-%d') }}</p>
+        <p class="card-text mb-1"><strong>Phone:</strong> {{ user.telno }}</p>
+        <p class="card-text mb-1"><strong>Address:</strong> {{ user.address }}</p>
+        <p class="card-text mb-1"><strong>Postal:</strong> {{ user.postal }}</p>
+        <p class="card-text mb-1"><strong>Active:</strong> {{ 'Yes' if user.is_active else 'No' }}</p>
+        <p class="card-text mb-1"><strong>Verified:</strong> {{ 'Yes' if user.is_verifieduser else 'No' }}</p>
+        <p class="card-text mb-3"><strong>Role:</strong> {{ user.role }}</p>
+
+        <div class="mt-auto">
+          <form method="POST" action="{{ url_for('admin.delete', user_id=user.id) }}" class="d-inline">
+            {{ form.hidden_tag() }}
+            <button type="submit" class="btn btn-danger btn-sm">Delete User</button>
+          </form>
+          <form method="POST" action="{{ url_for('admin.promote', user_id=user.id) }}" class="d-inline ms-2">
+            {{ form.hidden_tag() }}
+            <button type="submit" class="btn btn-primary btn-sm">Promote to Admin</button>
+          </form>
+        </div>
+      </div>
+    </div>
+  </div>
+  {% endfor %}
+</div>
+
+{% endblock %}
+

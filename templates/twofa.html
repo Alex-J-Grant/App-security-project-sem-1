@@ -1,0 +1,21 @@
+{% extends "base.html" %}
+
+{% block title %}2 Factor Authentication{% endblock %}
+
+{% block content %}
+<h1>6 Character Code</h1>
+
+<form method="POST" action="">
+  {{ form.hidden_tag() }}
+
+  <p>
+    {{ form.token.label }}<br>
+    {{ form.token(size=6) }}<br>
+    {% for error in form.token.errors %}
+    <span style="color: red;">{{ error }}</span>
+    {% endfor %}
+  </p>
+
+  <p>{{ form.submit() }}</p>
+</form>
+{% endblock %}
