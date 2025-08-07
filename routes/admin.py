@@ -1,4 +1,3 @@
-import re
 from flask import Blueprint, render_template, redirect, url_for, flash
 from helperfuncs.logger import main_logger
 from flask_login import login_required, current_user
@@ -8,6 +7,7 @@ from helperfuncs.rba import *
 from models.banreq import BanReq
 from sqlalchemy import text
 from sqlalchemy.orm import aliased
+from forms.userforms import Emptyform
 
 adminbp = Blueprint('admin', __name__, url_prefix='/admin')
 
@@ -21,8 +21,9 @@ def dashboard():
 @login_required
 @admin_required
 def viewusers():
-    users = User.query.with_entities(User.id, User.username, User.email, User.fname, User.lname, User.gender, User.dob, User.telno, User.address, User.postal, User.role).all()
-    return render_template('viewusers.html', users = users)
+    form = Emptyform()
+    users = User.query.with_entities(User.id, User.username, User.email, User.fname, User.lname, User.gender, User.dob, User.telno, User.address, User.postal, User.role, User.is_activeuser, User.is_verifieduser).all()
+    return render_template('viewusers.html', users = users, form = form)
 
 @adminbp.route('/users/<user_id>/posts')
 @login_required
@@ -46,70 +47,66 @@ def userposts(user_id):
 @login_required
 @admin_required
 def delete(user_id):
-    if current_user.role == 'Admin':
-        user = User.query.get_or_404(user_id)
-        db.session.delete(user)
-        db.session.commit()
+    user = User.query.get_or_404(user_id)
+    if user.role == 'Admin':
+        flash('You cannot delete an admin', 'danger')
         return redirect(url_for('admin.viewusers'))
-    else:
-        return render_template('403.html')
+
+    db.session.delete(user)
+    db.session.commit()
+    return redirect(url_for('admin.viewusers'))
 
 @adminbp.route('/users/promote/<user_id>', methods = ['POST'])
 @login_required
 @admin_required
 def promote(user_id):
-    if current_user.role == 'Admin':
-        user = User.query.get_or_404(user_id)
-        user.role = 'Admin'
-        db.session.commit()
-        return redirect(url_for('admin.viewusers'))
-    else:
-        return render_template('403.html')
+    user = User.query.get_or_404(user_id)
+    user.role = 'Admin'
+    db.session.commit()
+    return redirect(url_for('admin.viewusers'))
 
 
 @adminbp.route('/ban', methods = ['GET', 'POST'])
 @login_required
 @admin_required
 def banreq():
+    form = Emptyform()
     requests = BanReq.query.join(User).all()
-    return render_template('banreq.html', requests = requests)
+    return render_template('banreq.html', requests = requests, form = form)
 
 
 @adminbp.route('/users/ban/<banreq_id>', methods = ['POST'])
 @login_required
 @admin_required
 def banuser(banreq_id):
-    if current_user.role == 'Admin':
-        banreq = BanReq.query.get_or_404(banreq_id)
-        user = User.query.get_or_404(banreq.user_id)
-        user.is_active = False
-        banreq.handled = True
-        db.session.commit()
-        flash(f'User {user.username} has been banned', 'success')
-        return redirect(url_for('admin.banreq'))
-    else:
-        return render_template('403.html')
+    print(banreq_id)
+    banreq = BanReq.query.get_or_404(banreq_id)
+    user = User.query.get_or_404(banreq.userid)
+    user.is_activeuser = False
+    banreq.handled = True
+    db.session.commit()
+    flash(f'User {user.username} has been banned', 'success')
+    return redirect(url_for('admin.banreq'))
 
 
 @adminbp.route('/users/noban/<banreq_id>', methods = ['POST'])
 @login_required
 @admin_required
 def nobanuser(banreq_id):
-    if current_user.role == 'Admin':
-        banreq = BanReq.query.get_or_404(banreq_id)
-        user = User.query.get_or_404(banreq.user_id)
-        banreq.handled = True
-        db.session.commit()
-        flash(f'User {user.username} not banned', 'success')
-        return redirect(url_for('admin.banreq'))
-    else:
-        return render_template('403.html')
+    print(banreq_id)
+    banreq = BanReq.query.get_or_404(banreq_id)
+    user = User.query.get_or_404(banreq.userid)
+    banreq.handled = True
+    db.session.commit()
+    flash(f'User {user.username} not banned', 'success')
+    return redirect(url_for('admin.banreq'))
 
 
 @adminbp.route('/posts', methods = ['GET'])
 @login_required
 @admin_required
 def viewposts():
+    form = Emptyform()
     query = text( """
         SELECT *
         FROM POST
@@ -128,18 +125,17 @@ def viewposts():
         })
 
  
-    return render_template('adminposts.html', posts = posts)
+    return render_template('adminposts.html', posts = posts, form = form)
 
 
 @adminbp.route('/posts/delete/<post_id>', methods = ['POST'])
 @login_required
 @admin_required
 def delpost(post_id):
-    if current_user.role == 'Admin':
-        query = text('DELETE FROM POST WHERE POST_ID = :post_id')
-        db.session.execute(query, {'post_id': post_id})
-        db.session.commit()
-        flash('Post deleted successfully', 'success')
+    query = text('DELETE FROM POST WHERE POST_ID = :post_id')
+    db.session.execute(query, {'post_id': post_id})
+    db.session.commit()
+    flash('Post deleted successfully', 'success')
     return redirect(url_for('admin.viewposts'))
 
 

@@ -9,6 +9,7 @@ from forms.userforms import Createuser, Loginuser, Twofa, Forgetpw, Resetpw
 from models.session import Usersession
 from datetime import datetime, timezone, timedelta, tzinfo
 from helperfuncs.email_sender import send_email
+from helperfuncs.banneduser import *
 import secrets
 from flask import session
 
@@ -56,7 +57,9 @@ def login():
             user.twofa_code = token
             user.twofa_exp = datetime.now(timezone.utc) + timedelta(minutes = 5)
             db.session.commit()
-            send_email(token, user.email, user.username, '2fa')
+            print(user.email)
+            send_email(token, user.email, user.username, '2FA')
+            
             session['pending_2fa'] = user.id
             session['rememberme'] = form.remember.data
             return redirect(url_for('account.twofa'))

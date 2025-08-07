@@ -1,4 +1,6 @@
 from flask_wtf import FlaskForm
+from sqlalchemy.orm.util import _validator_events
+from sqlalchemy.util import unbound_method_to_callable
 from wtforms import BooleanField, DateField, EmailField, PasswordField, RadioField, SelectField, StringField, SubmitField
 from wtforms.validators import EqualTo, Length, Regexp,DataRequired,ValidationError, Email
 from helperfuncs.getcountry import get_countries
@@ -58,3 +60,10 @@ class Resetpw(FlaskForm):
     password = PasswordField('Password', validators=[DataRequired(), Length(min=10), Regexp(r'^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[!@#$%^&*])[A-Za-z\d!@#$%^&*]+$',message='Password must include uppercase, lowercase, number, and special character (!@#$%^&*).')])
     confirm_pw = PasswordField('Confirm Password', validators=[DataRequired(), EqualTo('password', message='Passwords must match')])
     submit = SubmitField('Change your password')
+
+class Report(FlaskForm):
+    reason = StringField('Why do you report', validators=[DataRequired(), Length(min=5, max=255)])
+    submit = SubmitField('Report')
+
+class Emptyform(FlaskForm):
+    pass

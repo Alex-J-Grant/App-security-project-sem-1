@@ -3,8 +3,10 @@ from helperfuncs.email_sender import send_email
 from helperfuncs.logger import main_logger
 from flask_login import login_required, current_user, logout_user
 from forms.profileforms import Editprofile, Delprofile
+from forms.userforms import Report
 from extensions import db
 from models.user import User
+from models.banreq import BanReq
 from helperfuncs.rba import *
 
 profile = Blueprint('profile', __name__, url_prefix= '/profile')
@@ -62,6 +64,21 @@ def delete():
         flash('Accounted Deleted')
         return redirect(url_for('account.login'))
     return render_template('delprofile.html', form=form)
+
+@profile.route('/reqban/<user_id>', methods = ['GET', 'POST'])
+@login_required
+def requestban(user_id):
+    form = Report()
+    if form.validate_on_submit():
+        banrequest = BanReq(
+        userid = user_id,
+        reason = form.reason.data.strip()
+        )
+        db.session.add(banrequest)
+        db.session.commit()
+        flash('Ban request submitted')
+        return redirect(url_for('home.home'))
+    return render_template('requestban.html', form = form)
 
 
 

@@ -28,6 +28,7 @@ class User(db.Model, UserMixin):
     userpfp = db.Column('USERPFP', db.String(255))
     twofa_code = db.Column('TWOFA_CODE', db.String(6))
     twofa_exp = db.Column('TWOFA_EXP', db.DateTime(timezone = True), default=lambda: datetime.now(timezone.utc))
+    ban_requests = db.relationship('BanReq', cascade = 'all, delete-orphan', backref = 'user')
 
     @property
     def password(self):
