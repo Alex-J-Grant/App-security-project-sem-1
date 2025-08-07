@@ -49,7 +49,8 @@ def create_app():
         MAIL_USERNAME=os.getenv('EMAIL'),
         MAIL_PASSWORD=os.getenv('EMAIL_PASSWORD'),  # must be a Gmail app password
         MAIL_DEFAULT_SENDER=os.getenv('EMAIL'),
-        REMEMBER_COOKIE_DURATION = timedelta(days=7)
+        REMEMBER_COOKIE_DURATION = timedelta(days=7),
+        SESSION_PERMANENT = False
 
 
     )

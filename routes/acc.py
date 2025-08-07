@@ -1,5 +1,6 @@
-from flask import Blueprint, render_template, redirect, url_for, flash, request, current_app
+from flask import Blueprint, render_template, redirect, url_for, flash, request, current_app, make_response
 from itsdangerous import NoneAlgorithm
+from sqlalchemy.engine import url
 from helperfuncs.logger import main_logger
 from flask_login import login_user, login_required, logout_user, current_user
 from models import user
@@ -79,6 +80,7 @@ def twofa():
     form = Twofa()
     user_id = session.get('pending_2fa', None)
     remember_me = session.get('rememberme', None)
+    print(remember_me)
     if not user_id:
         flash('Session expired. Please try again', 'danger')
         return redirect(url_for('account.login'))
@@ -93,7 +95,7 @@ def twofa():
         if twofa_exp and twofa_exp.tzinfo is None:
             twofa_exp = twofa_exp.replace(tzinfo=timezone.utc)
         if user.twofa_exp and datetime.now(timezone.utc) < twofa_exp and token == user.twofa_code:
-            login_user(user, remember = remember_me)
+            login_user(user, remember = False)
             session.pop('pending_2fa', None)
             session.pop('rememberme', None)
             user.twofa_code = None
@@ -137,9 +139,10 @@ def logout():
         db.session.commit()
     session.clear()
     logout_user()
+    resp = make_response(redirect(url_for('home.home')))
+    resp.delete_cookie('remember_token')
     flash('You have been logged out')
-    return redirect(url_for('account.login'))
-
+    return resp
 
 @account.route('/forgetpw', methods = ['GET', 'POST'])
 def forgetpw():
