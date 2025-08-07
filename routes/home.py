@@ -52,7 +52,7 @@ def home():
             'created_at': row.created_at.strftime('%Y-%m-%d %H:%M:%S'),
             'likes': row.likes,
             'comments': row.comments,
-            'user_liked':has_liked_post(current_user.id,row.id)
+            'user_liked':has_liked_post(row.id)
         })
 
     return render_template('home.html', posts=posts)

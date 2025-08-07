@@ -32,3 +32,5 @@ def register_error_handlers(app):
         else:
             flash('Submitting requests too fast please slow down', 'danger')
             return redirect(request.referrer or url_for('home.home'))
+
+    

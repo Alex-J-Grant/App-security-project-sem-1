@@ -56,7 +56,7 @@ def user_profile(username):
                 'created_at': post.created_at.strftime('%Y-%m-%d %H:%M:%S'),
                 'likes': post.likes,
                 'comments': post.comments,
-                'user_liked': has_liked_post(current_user.id,post.id)
+                'user_liked': has_liked_post(post.id)
             })
 
         # Determine friendship status if user is logged in
