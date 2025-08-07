@@ -8,6 +8,7 @@ from extensions import db
 from models.user import User
 from models.banreq import BanReq
 from helperfuncs.rba import *
+from helperfuncs.banneduser import banneduser
 
 profile = Blueprint('profile', __name__, url_prefix= '/profile')
 
@@ -88,4 +89,11 @@ def requestban(user_id):
 @admin_required
 def admin():
     return render_template('home.html')
+
+
+@profile.route('/bantest', methods = ['GET', 'POST'])
+@login_required
+@banneduser
+def bantest():
+    return redirect(url_for('account.create'))
 
