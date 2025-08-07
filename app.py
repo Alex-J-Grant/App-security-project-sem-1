@@ -37,7 +37,7 @@ def create_app():
         MAX_CONTENT_LENGTH = 16 * 1024 * 1024,
         UPLOAD_EXTENSIONS = ['.jpg', '.png', '.gif', '.jpeg'],
         SESSION_COOKIE_SECURE = True,
-        SESSION_COOKIE_HTTPSONLY = True,
+        SESSION_COOKIE_HTTPONLY = True,
         SESSION_COOKIE_SAMESITE = 'Lax',
         REMEMBER_COOKIE_SECURE = True,
         SESSION_TYPE = 'sqlalchemy',
