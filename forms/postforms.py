@@ -15,21 +15,22 @@ from wtforms import SelectField
 #make error messages vauge so attacker doesnt know whats happening
 def MIME_CHECKER(form,field):
     file = field.data
-    if not allowed_mime_type(file):
-        main_logger.warning(f"Attempt to bypass file restrictions on post upload by {current_user.username} {current_user.id}")
-        raise ValidationError("Images only please (jpg, png, gif).")
+    if field.data:
+        if not allowed_mime_type(file):
+            main_logger.warning(f"Attempt to bypass file restrictions on post upload by {current_user.username} {current_user.id}")
+            raise ValidationError("Images only please (jpg, png, gif).")
 
 def VIRUS_CHECKER(form,field):
     file = field.data
-    if virus_check(file) is not None:
-        main_logger.warning(f"Attempt to upload file with virus signatures on post upload by {current_user.username} {current_user.id}")
-        raise ValidationError("Images only please (jpg, png, gif).")
+    if field.data:
+        if virus_check(file) is not None:
+            main_logger.warning(f"Attempt to upload file with virus signatures on post upload by {current_user.username} {current_user.id}")
+            raise ValidationError("Images only please (jpg, png, gif).")
 
 class PostForm(FlaskForm):
-    title = StringField('Title', validators=[DataRequired(), Length(min=1, max=255),Regexp(r"^[a-zA-Z0-9_()]+$", message="Only letters, numbers, underscores and brackets allowed.")])
-    description = TextAreaField('Description', validators=[DataRequired(), Length(min=1, max=255),Regexp(r"^[a-zA-Z0-9_()]+$", message="Only letters, numbers, underscores and brackets allowed.")])
+    title = StringField('Title', validators=[DataRequired(), Length(min=1, max=255),Regexp(r"^[a-zA-Z0-9_() ]+$", message="Only letters, numbers, underscores and brackets allowed.")])
+    description = TextAreaField('Description', validators=[DataRequired(), Length(min=1, max=255),Regexp(r"^[a-zA-Z0-9_() ]+$", message="Only letters, numbers, underscores and brackets allowed.")])
     image = FileField('Upload Image', validators=[
-        FileRequired(),
         FileAllowed(['jpg', 'png', 'gif', 'jpeg'], 'Images only please (jpg, png, gif).'),
         MIME_CHECKER,
         VIRUS_CHECKER
