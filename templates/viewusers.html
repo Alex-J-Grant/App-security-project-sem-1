@@ -22,7 +22,7 @@
         <p class="card-text mb-1"><strong>Phone:</strong> {{ user.telno }}</p>
         <p class="card-text mb-1"><strong>Address:</strong> {{ user.address }}</p>
         <p class="card-text mb-1"><strong>Postal:</strong> {{ user.postal }}</p>
-        <p class="card-text mb-1"><strong>Active:</strong> {{ 'Yes' if user.is_active else 'No' }}</p>
+        <p class="card-text mb-1"><strong>Active:</strong> {{ 'Yes' if user.is_activeuser else 'No' }}</p>
         <p class="card-text mb-1"><strong>Verified:</strong> {{ 'Yes' if user.is_verifieduser else 'No' }}</p>
         <p class="card-text mb-3"><strong>Role:</strong> {{ user.role }}</p>
 
