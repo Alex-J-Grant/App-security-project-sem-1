@@ -48,6 +48,9 @@ document.addEventListener("DOMContentLoaded", () => {
         showInlineTooltip(btn, "Too fast, slow down");
         return;
       }
+      if (resp.status === 401){
+        window.location.href = "/account/login";;
+      }
       if (!resp.ok) {
         return;
       }

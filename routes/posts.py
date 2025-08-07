@@ -56,7 +56,7 @@ def view_post_route(post_id):
         'created_at': result.created_at.strftime('%Y-%m-%d %H:%M:%S'),
         'likes': result.likes,
         'comments': result.comments,
-        'user_liked': has_liked_post(current_user.id,result.id)
+        'user_liked': has_liked_post(result.id)
 
     }
     return render_template('inside_post.html', post=post, back_url = request.referrer)
@@ -140,9 +140,12 @@ def upload_post():
 
 
 @like_bp.route("/like/<string:post_id>/<action>", methods=["POST"])
-@login_required
 @limiter.limit("15 per minute")
 def like_action(post_id, action):
+
+    if not current_user.is_authenticated:
+        flash("Please log in before liking","danger")
+        return jsonify({'error': 'Not logged in'}), 401
     #get the user id
     user_id = current_user.id
 
