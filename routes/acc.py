@@ -58,10 +58,12 @@ def login():
             user.twofa_exp = datetime.now(timezone.utc) + timedelta(minutes = 5)
             db.session.commit()
             print(user.email)
+            print(form.remember.data)
             send_email(token, user.email, user.username, '2FA')
             
             session['pending_2fa'] = user.id
             session['rememberme'] = form.remember.data
+
             return redirect(url_for('account.twofa'))
         else:
             flash('Invalid Credentials', 'danger')

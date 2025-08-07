@@ -14,9 +14,9 @@
         <div class="collapse navbar-collapse d-flex align-items-center" id="collapsibleNavbar">
             <!-- Left links -->
             <ul class="navbar-nav me-auto">
-                {% if role == "Admin" %}
+                {% if current_user.role == "Admin" %}
                 <li class="nav-item">
-                    <a class="nav-link text-white" href="/seller" style="font-size: 1.1rem;">Admin Board</a>
+                  <a class="nav-link text-white" href="{{ url_for('admin.dashboard') }}" style="font-size: 1.1rem;">Admin Board</a>
                 </li>
                 {% else %}
                 <li class="nav-item dropdown">
