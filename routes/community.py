@@ -1,5 +1,5 @@
 
-from flask import Blueprint, render_template, request, redirect, flash, url_for,abort
+from flask import Blueprint, render_template, request, redirect, flash, url_for,abort,jsonify
 from werkzeug.utils import secure_filename
 from PIL import Image
 import os, uuid, bleach
@@ -8,10 +8,11 @@ from extensions import db
 from sqlalchemy import text
 from flask_login import login_required,current_user
 from helperfuncs.post_likes import has_liked_post
-from helperfuncs.validation import allowed_mime_type, virus_check
+from helperfuncs.community_member import has_joined_comm
+from rate_limiter_config import limiter
 community = Blueprint('community',__name__,url_prefix='/communities')
 create_community = Blueprint('create_community',__name__)
-
+join_community = Blueprint("join_community", __name__)
 #first is for community banners then community profile pictures
 UPLOAD_FOLDERS = ["static/images/community_banners","static/images/profile_pictures"]
 
@@ -38,11 +39,13 @@ def community_route(subreddit_name):
     # Prepare community object for template
     community = {
         "name": result["NAME"],
+        "comm_id": result["ID"],
         "description": result["DESCRIPTION"],
         "banner_image": url_for('static', filename=f'images/community_banners/{result["BANNER_IMAGE"]}') if result["BANNER_IMAGE"] else None,
         "icon_image": url_for('static', filename=f'images/profile_pictures/{result["COMM_PFP"]}') if result["BANNER_IMAGE"] else None,
         "tag": result["TAG"],
-        "mem_count": result["MEMBER_COUNT"]
+        "mem_count": result["MEMBER_COUNT"],
+        "joined": has_joined_comm(result["ID"])
     }
 
 
@@ -163,3 +166,66 @@ def create_community_route():
 
 
     return render_template("create_community.html", form=form)
+
+
+@join_community.route("/join_community/<string:community_id>/<action>", methods=["POST"])
+@limiter.limit("15 per minute")
+def like_action(community_id, action):
+
+    if not current_user.is_authenticated:
+        flash("Please log in before joining a community","danger")
+        return jsonify({'error': 'Not logged in'}), 401
+    #get the user id
+    user_id = current_user.id
+
+    #don't do anything if action is not like or unlike
+    if action not in ("join", "leave"):
+        return jsonify({"error": "invalid action"}), 400
+
+    #starts transaction so if any errors then goes back to the state before
+    with db.engine.begin() as conn:  # transaction
+        # check existing
+        existing = conn.execute(
+            text("SELECT 1 FROM COMMUNITY_MEMBERS WHERE USER_ID = :uid AND COMMUNITY_ID = :cid LIMIT 1"),
+            {"uid": user_id, "cid": community_id}
+        ).fetchone()
+
+        joined = False
+        if action == "join":
+            if not existing:
+                # insert the new member
+                conn.execute(
+                    text("INSERT INTO COMMUNITY_MEMBERS (USER_ID, COMMUNITY_ID) VALUES (:uid, :pid)"),
+                    {"uid": user_id, "pid": community_id}
+                )
+                # increment counter
+                conn.execute(
+                    text("UPDATE SUBCOMMUNITY SET MEMBER_COUNT = MEMBER_COUNT + 1 WHERE ID = :cid"),
+                    {"cid": community_id}
+                )
+                joined = True
+            else:
+                joined = True  # already joined
+
+        # double check that the action is leave
+        elif action == "leave":
+            if existing:
+                conn.execute(
+                    text("DELETE FROM COMMUNITY_MEMBERS WHERE USER_ID = :uid AND COMMUNITY_ID = :cid"),
+                    {"uid": user_id, "cid": community_id}
+                )
+                conn.execute(
+                    text("UPDATE SUBCOMMUNITY SET MEMBER_COUNT = MEMBER_COUNT - 1 WHERE ID = :cid AND MEMBER_COUNT > 0"),
+                    {"cid": community_id}
+                )
+                joined = False
+            else:
+                joined = False  # was not liked
+
+        # fetch updated member count
+        mc = conn.execute(
+            text("SELECT MEMBER_COUNT FROM SUBCOMMUNITY WHERE ID = :cid"),
+            {"cid": community_id}
+        ).fetchone()
+        member_count = mc.MEMBER_COUNT if mc else 0
+    return jsonify({"joined": joined, "member_count": member_count})

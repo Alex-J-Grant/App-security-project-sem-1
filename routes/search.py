@@ -3,6 +3,7 @@ from sqlalchemy import text
 from extensions import db
 import html
 import bleach
+from rate_limiter_config import limiter
 search_bp = Blueprint('search', __name__)
 
 
@@ -10,6 +11,7 @@ def sanitize_query(q: str) -> str:
     return bleach.clean(q, tags=[])[:100]  # limit length
 
 @search_bp.route("/search_suggestions")
+@limiter.limit("60 per minute")
 def search_suggestions():
     q = request.args.get("q", "")
     if not q:

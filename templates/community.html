@@ -13,14 +13,23 @@
         <img src="{{ community.icon_image }}"
              class="rounded-circle border border-light position-absolute"
              style="width: 72px; height: 72px; bottom: -36px; left: 20px; background-color: white; padding: 4px;">
+
     </div>
 
     <!-- Subreddit Title and Description -->
-    <div class="ps-5 ms-5 mt-3">
+    <div class="ps-5 ms-5 mt-3 position-relative">
+        <button class="btn {% if community.joined %} btn-danger {% else %} btn-primary{% endif %}  rounded-pill px-4 position-absolute top-0 end-0 join-btn"
+                data-comm-id="{{ community.comm_id }}"
+                data-joined ="{{ 'true' if community.joined else 'false' }}">
+        {% if community.joined %} Leave {% else %} Join {% endif %}
+        </button>
         <h2 class="fw-bold">c/{{ community.name }}</h2>
+        <small class="text-muted member_count">{{ community.mem_count }} members</small>
         <p class="text-muted">{{ community.description }}</p>
+
     </div>
 
+    {% if posts %}
     <!-- Posts Loop -->
     {% for post in posts %}
 
@@ -73,7 +82,15 @@
     </div>
 
     {% endfor %}
+    {% else %}
+    <div class=" d-flex justify-content-center align-items-center" style="height:80vh;">
+        <div class="text-center">
+            <h1 class="display-4">Sorry no posts in this community yet.</h1>
+        </div>
+    </div>
+    {% endif %}
 
 </div>
+<script src="{{ url_for('static', filename = 'javascript/join_community.js') }}"></script>
 <script src="{{ url_for('static', filename='javascript/liking.js') }}"></script>
 {% endblock %}

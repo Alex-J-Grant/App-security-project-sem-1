@@ -103,6 +103,7 @@ def create_app():
     app.register_blueprint(view_post)
     app.register_blueprint(community)
     app.register_blueprint(create_community)
+    app.register_blueprint(join_community)
     app.register_blueprint(testbp)
     app.register_blueprint(create_post)
     app.register_blueprint(profile)

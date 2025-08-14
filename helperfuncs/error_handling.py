@@ -29,6 +29,8 @@ def register_error_handlers(app):
             return jsonify({'response': "Please slow down, too many requests."}), 429
         if request.path.startswith("/like") and (request.path.endswith("/like") or request.path.endswith("/unlike")):
             return jsonify({'response': "Please slow down, too many requests."}), 429
+        if request.path.startswith("/join_community") and (request.path.endswith("/join") or request.path.endswith("/leave")):
+            return jsonify({'response': "Please slow down, too many requests."}), 429
         else:
             flash('Submitting requests too fast please slow down', 'danger')
             return redirect(request.referrer or url_for('home.home'))

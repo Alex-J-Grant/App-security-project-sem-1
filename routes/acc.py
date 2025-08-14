@@ -13,7 +13,6 @@ from helperfuncs.email_sender import send_email
 from helperfuncs.banneduser import *
 import secrets
 from flask import session
-
 account = Blueprint('account', __name__, url_prefix= '/account')
 
 @account.route('/create', methods = ['GET', 'POST'])

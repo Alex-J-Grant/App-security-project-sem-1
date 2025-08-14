@@ -28,8 +28,8 @@ def VIRUS_CHECKER(form,field):
             raise ValidationError("Images only please (jpg, png, gif).")
 
 class PostForm(FlaskForm):
-    title = StringField('Title', validators=[DataRequired(), Length(min=1, max=255),Regexp(r"^[a-zA-Z0-9_() ]+$", message="Only letters, numbers, underscores and brackets allowed.")])
-    description = TextAreaField('Description', validators=[DataRequired(), Length(min=1, max=255),Regexp(r"^[a-zA-Z0-9_() ]+$", message="Only letters, numbers, underscores and brackets allowed.")])
+    title = StringField('Title', validators=[DataRequired(), Length(min=1, max=255),Regexp(r"^[a-zA-Z0-9_() ]+$", message="Only letters, Spaces, numbers, underscores and brackets allowed.")])
+    description = TextAreaField('Description', validators=[DataRequired(), Length(min=1, max=255),Regexp(r"^[a-zA-Z0-9_() ]+$", message="Only letters, Spaces, numbers, underscores and brackets allowed.")])
     image = FileField('Upload Image', validators=[
         FileAllowed(['jpg', 'png', 'gif', 'jpeg'], 'Images only please (jpg, png, gif).'),
         MIME_CHECKER,
