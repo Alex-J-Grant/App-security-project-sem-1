@@ -1,13 +1,13 @@
 from flask import flash, redirect, request, url_for,render_template,jsonify
 from werkzeug.exceptions import RequestEntityTooLarge
 from flask_wtf.csrf import CSRFError
-
+from helperfuncs.local_url_check import is_local_url
 def register_error_handlers(app):
 
     @app.errorhandler(RequestEntityTooLarge)
     def handle_large_file(e):
         flash('File too large. Maximum upload size is 16 MB.', 'danger')
-        return redirect(request.referrer or url_for('create_post.upload_post'))
+        return redirect(request.referrer)
 
     @app.errorhandler(404)
     def not_found_error(error):
@@ -20,7 +20,13 @@ def register_error_handlers(app):
     @app.errorhandler(CSRFError)
     def handle_csrf_error(e):
         flash('Sorry error occurred when submitting, Please try again.', 'danger')
-        return redirect(request.referrer or url_for('home.home'))
+        target = request.referrer or url_for('home.home')
+        if is_local_url(target):
+            return redirect(target)
+        else:
+            return redirect(url_for('home.home'))
+
+
 
     @app.errorhandler(429)
     def ratelimit_handler(e):
