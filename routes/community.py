@@ -1,5 +1,5 @@
 
-from flask import Blueprint, render_template, request, redirect, flash, url_for,abort,jsonify
+from flask import Blueprint, render_template, redirect, flash, url_for,abort,jsonify
 from werkzeug.utils import secure_filename
 from PIL import Image
 import os, uuid, bleach

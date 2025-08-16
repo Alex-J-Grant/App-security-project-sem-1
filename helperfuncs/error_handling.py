@@ -7,7 +7,11 @@ def register_error_handlers(app):
     @app.errorhandler(RequestEntityTooLarge)
     def handle_large_file(e):
         flash('File too large. Maximum upload size is 16 MB.', 'danger')
-        return redirect(request.referrer)
+        target = request.referrer or url_for('home.home')
+        if is_local_url(target):
+            return redirect(target)
+        else:
+            return redirect(url_for('home.home'))
 
     @app.errorhandler(404)
     def not_found_error(error):
@@ -39,6 +43,10 @@ def register_error_handlers(app):
             return jsonify({'response': "Please slow down, too many requests."}), 429
         else:
             flash('Submitting requests too fast please slow down', 'danger')
-            return redirect(request.referrer or url_for('home.home'))
+            target = request.referrer or url_for('home.home')
+            if is_local_url(target):
+                return redirect(target)
+            else:
+                return redirect(url_for('home.home'))
 
     

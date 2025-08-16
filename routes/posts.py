@@ -12,6 +12,7 @@ import bleach
 from flask_login import login_required,current_user
 from rate_limiter_config import limiter
 from helperfuncs.post_likes import has_liked_post
+from helperfuncs.local_url_check import is_local_url
 UPLOAD_FOLDER_POST = 'static/images/post_images'
 
 view_post = Blueprint('view_post', __name__, url_prefix='/view_post')
@@ -59,7 +60,12 @@ def view_post_route(post_id):
         'user_liked': has_liked_post(result.id)
 
     }
-    return render_template('inside_post.html', post=post, back_url = request.referrer)
+    target = request.referrer or url_for('home.home')
+    if is_local_url(target):
+        back_url = target
+    else:
+        back_url = url_for('home.home')
+    return render_template('inside_post.html', post=post, back_url=back_url)
 
 
 @create_post.route('/upload_post', methods=['GET', 'POST'])
