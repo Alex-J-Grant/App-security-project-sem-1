@@ -7,7 +7,7 @@ from flask_login import login_user, login_required, logout_user, current_user
 from models import user
 from models.user import User
 from extensions import db
-from forms.userforms import Createuser, Loginuser, Twofa, Forgetpw, Resetpw
+from forms.userforms import Createuser, Loginuser, Twofa, Forgetpw, Resetpw,ConfirmUntrustForm
 from models.session import Usersession
 from datetime import datetime, timezone, timedelta, tzinfo
 from helperfuncs.email_sender import send_email
@@ -54,6 +54,7 @@ def create():
         save_trusted_device(user.id,device_token,verified=True)
         serializer = URLSafeSerializer(current_app.config['SECRET_KEY'])
         cookie = request.cookies.get("trusted_devices")
+        mark_device_verified(device_token)
         trusted_map = {}
         if cookie:
             try:
@@ -77,7 +78,7 @@ def create():
         
 
 @account.route('/login', methods = ['GET', 'POST'])
-@limiter.limit('5 per minute')
+@limiter.limit('10 per minute')
 def login():
     main_logger.info('User login accessed')
     form = Loginuser()
@@ -157,7 +158,7 @@ def login():
                 signed_token = serializer.dumps({'user_id': user.id, 'device_token': temp_token})
                 verify_link = url_for('account.verify_new_device', token=signed_token, _external=True)
                 print(verify_link)
-                send_email(verify_link, user.email, f"{user.fname} {user.lname}", "verify_new_device")
+                # send_email(verify_link, user.email, f"{user.fname} {user.lname}", "verify_new_device")
 
                 flash("New device detected. Please verify via the email we sent you.", "warning")
                 return resp_not_trusted
@@ -306,3 +307,41 @@ def verify_new_device(token):
     mark_device_verified(device_token)
 
     return render_template("trust_device_success.html")
+
+
+
+@account.route('/untrust_all_devices', methods=['GET', 'POST'])
+@login_required
+def untrust_all_devices():
+    form = ConfirmUntrustForm()
+
+    if form.validate_on_submit():
+        # Check credentials
+        email = form.email.data.strip()
+        password = form.password.data.strip()
+
+        if email != current_user.email or not current_user.check_password(password):
+            flash("Incorrect email or password. Cannot untrust devices.", "danger")
+            return redirect(url_for('profile.view'))
+
+
+        user_devices = UserTrustedDevice.query.filter_by(user_id=current_user.id).all()
+
+        device_id = [d.device_id for d in user_devices]
+
+        UserTrustedDevice.query.filter_by(user_id=current_user.id).delete()
+
+
+        if device_id:
+
+            TrustedDevice.query.filter(TrustedDevice.id.in_(device_id)).delete(
+                synchronize_session=False)
+        db.session.commit()
+
+        # Clear trusted_devices cookie on this browser
+        resp = make_response(redirect(url_for('profile.view')))
+        resp.delete_cookie("trusted_devices")
+        flash("All devices have been untrusted. You will need to trust them again next log in.", "warning")
+        return resp
+
+    return render_template("untrust_devices.html", form=form)

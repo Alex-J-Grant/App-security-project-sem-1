@@ -67,3 +67,9 @@ class Report(FlaskForm):
 
 class Emptyform(FlaskForm):
     pass
+
+
+class ConfirmUntrustForm(FlaskForm):
+    email = StringField("Email", validators=[DataRequired(), Email()])
+    password = PasswordField("Password", validators=[DataRequired()])
+    submit = SubmitField("Untrust All Devices")

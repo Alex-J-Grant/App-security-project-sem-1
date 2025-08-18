@@ -51,7 +51,7 @@ def view_post_route(post_id):
         'description': result.DESCRIPT,
         'image_url':  url_for('static', filename=f'images/post_images/{result.image_url}') if result.image_url else None,
         'username': result.username,
-        'userpfp': result.userpfp if result.userpfp else '/static/images/default_pfp.jpg',
+        'userpfp': "/static/images/profile_pictures/" + result.userpfp if result.userpfp else "/static/images/default_pfp.jpg",
         'subcommunity_pfp': url_for('static', filename=f'images/profile_pictures/{result.subcommunity_pfp}') if result.subcommunity_pfp else '/static/images/SC_logo.png',
         'subcommunity_name': result.subcommunity_name,
         'created_at': result.created_at.strftime('%Y-%m-%d %H:%M:%S'),
