@@ -9,8 +9,8 @@ from models.user import User
 
 class Createuser(FlaskForm):
     username = StringField('Username', validators=[DataRequired(), Length(min=5, max=20)])
-    fname = StringField('First Name', validators=[DataRequired()])
-    lname = StringField('Last Name', validators=[DataRequired()])
+    fname = StringField('First Name', validators=[DataRequired(), Length(max=20)])
+    lname = StringField('Last Name', validators=[DataRequired(), Length(max=20)])
     email = EmailField('Email', validators=[DataRequired(), Email(message = 'Invalid Email Address'), Length(max=120)])
     gender = RadioField('Gender', choices=[('M', 'Male'), ('F', 'Female'), ('O', 'Others')], validators=[DataRequired()])
     telno = StringField('Phone Number', validators=[DataRequired(), Regexp(r'^\+?\d{7,15}$', message="Enter a valid phone number")])
