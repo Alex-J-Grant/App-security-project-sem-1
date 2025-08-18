@@ -6,7 +6,7 @@
 {% block content %}
 <div class="container mt-4">
     <h2>Friend Requests</h2>
-    
+
     <!-- Pending Requests (Received) -->
     <div class="mb-5">
         <h4>Pending Requests</h4>
@@ -16,18 +16,18 @@
                     <div class="card-body">
                         <div class="d-flex align-items-center justify-content-between">
                             <div class="d-flex align-items-center">
-                                <img src="{{ request.sender.userpfp or url_for('static', filename='images/John_Placeholder.png') }}" 
+                                <img src="{{ request.sender.userpfp if request.sender else url_for('static', filename='images/default_pfp.jpg') }}"
                                      class="rounded-circle me-3" width="50" height="50" alt="Profile">
                                 <div>
-                                    <h5 class="mb-1">{{ request.sender.fname }} {{ request.sender.lname }}</h5>
-                                    <p class="text-muted mb-0">@{{ request.sender.username }}</p>
-                                    <small class="text-muted">{{ request.CREATED_AT.strftime('%B %d, %Y at %I:%M %p') }}</small>
+                                    <h5 class="mb-1">{{ request.sender.fname if request.sender else 'Unknown' }} {{ request.sender.lname if request.sender else 'User' }}</h5>
+                                    <p class="text-muted mb-0">@{{ request.sender.username if request.sender else 'unknown' }}</p>
+                                    <small class="text-muted">{{ request.CREATED_AT.strftime('%B %d, %Y at %I:%M %p') if request.CREATED_AT else 'Unknown date' }}</small>
                                 </div>
                             </div>
                             <div>
-                                <a href="{{ url_for('friends.respond_request', request_id=request.ID, action='accept') }}" 
+                                <a href="{{ url_for('friends.respond_request', request_id=request.ID, action='accept') }}"
                                    class="btn btn-success btn-sm me-2">Accept</a>
-                                <a href="{{ url_for('friends.respond_request', request_id=request.ID, action='reject') }}" 
+                                <a href="{{ url_for('friends.respond_request', request_id=request.ID, action='reject') }}"
                                    class="btn btn-danger btn-sm">Reject</a>
                             </div>
                         </div>
@@ -38,7 +38,7 @@
             <div class="alert alert-info">No pending friend requests.</div>
         {% endif %}
     </div>
-    
+
     <!-- Sent Requests -->
     <div>
         <h4>Sent Requests</h4>
@@ -48,12 +48,12 @@
                     <div class="card-body">
                         <div class="d-flex align-items-center justify-content-between">
                             <div class="d-flex align-items-center">
-                                <img src="{{ request.receiver.userpfp or url_for('static', filename='images/John_Placeholder.png') }}" 
+                                <img src="{{ request.receiver.userpfp if request.receiver else url_for('static', filename='images/default_pfp.jpg') }}"
                                      class="rounded-circle me-3" width="50" height="50" alt="Profile">
                                 <div>
-                                    <h5 class="mb-1">{{ request.receiver.fname }} {{ request.receiver.lname }}</h5>
-                                    <p class="text-muted mb-0">@{{ request.receiver.username }}</p>
-                                    <small class="text-muted">{{ request.CREATED_AT.strftime('%B %d, %Y at %I:%M %p') }}</small>
+                                    <h5 class="mb-1">{{ request.receiver.fname if request.receiver else 'Unknown' }} {{ request.receiver.lname if request.receiver else 'User' }}</h5>
+                                    <p class="text-muted mb-0">@{{ request.receiver.username if request.receiver else 'unknown' }}</p>
+                                    <small class="text-muted">{{ request.CREATED_AT.strftime('%B %d, %Y at %I:%M %p') if request.CREATED_AT else 'Unknown date' }}</small>
                                 </div>
                             </div>
                             <span class="badge bg-warning">Pending</span>

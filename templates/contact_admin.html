@@ -111,17 +111,7 @@
                 </div>
 
                 <div class="row">
-                    <div class="col-md-12">
-                        <h6>Contact Actions:</h6>
-                        <a href="mailto:{{ message.EMAIL }}?subject=Re: {{ message.SUBJECT }}&body=Hi {{ message.FIRST_NAME }},%0D%0A%0D%0AThank you for contacting us.%0D%0A%0D%0A"
-                           class="btn btn-success me-2">
-                            <i class="fas fa-envelope"></i> Email Reply
-                        </a>
-                        <a href="{{ url_for('friends.search_users') }}?search={{ message.EMAIL }}"
-                           class="btn btn-info">
-                            <i class="fas fa-search"></i> Find User
-                        </a>
-                    </div>
+
                 </div>
             </div>
         </div>

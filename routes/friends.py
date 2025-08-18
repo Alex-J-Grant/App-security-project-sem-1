@@ -41,6 +41,14 @@ from security.friends_owasp_security import (
 friends = Blueprint('friends', __name__, url_prefix='/friends')
 
 
+def get_profile_picture_url(user_pfp):
+    """Helper function to construct profile picture URL consistently"""
+    if user_pfp:
+        return url_for('static', filename=f'images/profile_pictures/{user_pfp}')
+    else:
+        return url_for('static', filename='images/default_pfp.jpg')
+
+
 # Apply global security decorators to all routes
 @friends.before_request
 @enhance_session_security()
@@ -75,7 +83,7 @@ def search_users():
 
         try:
             # A03: Parameterized queries to prevent SQL injection
-            users = User.query.filter(
+            users_query = User.query.filter(
                 or_(
                     User.username.ilike(f'%{search_term}%'),
                     User.fname.ilike(f'%{search_term}%'),
@@ -84,9 +92,18 @@ def search_users():
                 User.id != current_user.id  # A01: Access control
             ).limit(20).all()
 
-            # Check friendship status with integrity validation
-            for user in users:
-                user.friendship_status = get_friendship_status(current_user.id, user.id)
+            # Process users and add profile picture URLs
+            users = []
+            for user in users_query:
+                user_data = {
+                    'id': user.id,
+                    'username': user.username,
+                    'fname': user.fname,
+                    'lname': user.lname,
+                    'userpfp': get_profile_picture_url(user.userpfp),
+                    'friendship_status': get_friendship_status(current_user.id, user.id)
+                }
+                users.append(user_data)
 
             # A09: Log successful search
             log_security_event('user_search_performed', {
@@ -186,25 +203,61 @@ def view_requests():
         main_logger.info(f'User {current_user.username} viewing friend requests')
 
         # A01: Access control - only show user's own requests
-        pending_requests = FriendRequest.query.filter_by(
+        pending_requests_raw = FriendRequest.query.filter_by(
             RECV_ID=current_user.id,
             STATUS='pending'
         ).all()
 
-        sent_requests = FriendRequest.query.filter_by(
+        sent_requests_raw = FriendRequest.query.filter_by(
             SENDER_ID=current_user.id,
             STATUS='pending'
         ).all()
 
+        # Process pending requests with profile pictures
+        processed_pending = []
+        for request in pending_requests_raw:
+            sender_user = User.query.get(request.SENDER_ID)
+            if sender_user:
+                request_data = {
+                    'ID': request.ID,
+                    'CREATED_AT': request.CREATED_AT,
+                    'sender': {
+                        'id': sender_user.id,
+                        'username': sender_user.username,
+                        'fname': sender_user.fname,
+                        'lname': sender_user.lname,
+                        'userpfp': get_profile_picture_url(sender_user.userpfp)
+                    }
+                }
+                processed_pending.append(request_data)
+
+        # Process sent requests with profile pictures
+        processed_sent = []
+        for request in sent_requests_raw:
+            receiver_user = User.query.get(request.RECV_ID)
+            if receiver_user:
+                request_data = {
+                    'ID': request.ID,
+                    'CREATED_AT': request.CREATED_AT,
+                    'receiver': {
+                        'id': receiver_user.id,
+                        'username': receiver_user.username,
+                        'fname': receiver_user.fname,
+                        'lname': receiver_user.lname,
+                        'userpfp': get_profile_picture_url(receiver_user.userpfp)
+                    }
+                }
+                processed_sent.append(request_data)
+
         # A09: Log request viewing
         log_security_event('friend_requests_viewed', {
-            'pending_count': len(pending_requests),
-            'sent_count': len(sent_requests)
+            'pending_count': len(processed_pending),
+            'sent_count': len(processed_sent)
         }, level='INFO')
 
         return render_template('friend_requests.html',
-                               pending_requests=pending_requests,
-                               sent_requests=sent_requests)
+                               pending_requests=processed_pending,
+                               sent_requests=processed_sent)
     except Exception as e:
         log_security_event('view_requests_error', {
             'error': str(e)
@@ -293,7 +346,19 @@ def friends_list():
         for friendship in friend_relationships:
             friend_user = User.query.get(friendship.FRIEND_ID)
             if friend_user:
-                friends_data.append((friendship, friend_user))
+                friend_data = {
+                    'friendship': {
+                        'CREATED_AT': friendship.CREATED_AT
+                    },
+                    'friend': {
+                        'id': friend_user.id,
+                        'username': friend_user.username,
+                        'fname': friend_user.fname,
+                        'lname': friend_user.lname,
+                        'userpfp': get_profile_picture_url(friend_user.userpfp)
+                    }
+                }
+                friends_data.append(friend_data)
 
         # A09: Log friends list access
         log_security_event('friends_list_viewed', {
@@ -332,7 +397,13 @@ def messages_overview():
                 partner = User.query.get(partner_id)
                 if partner:
                     conversations[partner_id] = {
-                        'partner': partner,
+                        'partner': {
+                            'id': partner.id,
+                            'username': partner.username,
+                            'fname': partner.fname,
+                            'lname': partner.lname,
+                            'userpfp': get_profile_picture_url(partner.userpfp)
+                        },
                         'last_message': msg,
                         'unread_count': 0
                     }
@@ -381,6 +452,15 @@ def chat(friend_id):
             flash('User not found', 'danger')
             return redirect(url_for('friends.friends_list'))
 
+        # Create friend data with proper profile picture URL
+        friend_data = {
+            'id': friend.id,
+            'username': friend.username,
+            'fname': friend.fname,
+            'lname': friend.lname,
+            'userpfp': get_profile_picture_url(friend.userpfp)
+        }
+
         # Get chat history with limit for performance (A05: Resource management)
         messages = Message.query.filter(
             or_(
@@ -409,7 +489,7 @@ def chat(friend_id):
             'messages_count': len(messages)
         }, level='INFO')
 
-        return render_template('chat.html', friend=friend, messages=messages, form=form)
+        return render_template('chat.html', friend=friend_data, messages=messages, form=form)
 
     except Exception as e:
         log_security_event('chat_error', {

@@ -12,7 +12,7 @@
                 <div class="card-header bg-primary text-white">
                     <div class="d-flex align-items-center justify-content-between">
                         <div class="d-flex align-items-center">
-                            <img src="{{ friend.userpfp or url_for('static', filename='images/John_Placeholder.png') }}"
+                            <img src="{{ friend.userpfp }}"
                                  class="rounded-circle me-3" width="40" height="40" alt="Profile">
                             <h5 class="mb-0">{{ friend.fname }} {{ friend.lname }}</h5>
                         </div>
