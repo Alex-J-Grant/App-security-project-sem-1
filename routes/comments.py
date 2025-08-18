@@ -1,4 +1,4 @@
-# routes/comments.py
+# routes/comments.py - Enhanced with OWASP security
 from flask import Blueprint, request, redirect, url_for, flash, jsonify
 from flask_login import login_required, current_user
 from extensions import db
@@ -8,11 +8,20 @@ from helperfuncs.logger import main_logger
 import bleach
 from sqlalchemy import text
 
+# Import security functions from your OWASP module
+from security.friends_owasp_security import (
+    require_authentication, sanitize_message_content,
+    validate_uuid, rate_limit, secure_headers, log_security_event
+)
+
 comments = Blueprint('comments', __name__, url_prefix='/comments')
 
 
 @comments.route('/add_comment', methods=['POST'])
 @login_required
+@require_authentication
+@rate_limit('comment', limit=10, window=60)
+@secure_headers
 def add_comment():
     """Add a new comment to a post"""
     try:
@@ -21,22 +30,39 @@ def add_comment():
         print(f"Form data: {request.form}")
         print(f"Current user: {current_user.username}")
 
-        # Get form data directly
+        # Get form data directly with enhanced validation
         post_id = request.form.get('post_id')
         content = request.form.get('content')
 
         print(f"Post ID: {post_id}")
         print(f"Content: {content}")
 
-        if not post_id or not content:
+        # Enhanced validation
+        if not post_id or not validate_uuid(post_id):
+            log_security_event('invalid_post_id_comment', {
+                'post_id': post_id
+            }, level='ERROR')
+            flash('Invalid post ID', 'danger')
+            return redirect(request.referrer or url_for('home.home'))
+
+        if not content:
             flash('Missing post ID or content', 'danger')
             return redirect(request.referrer or url_for('home.home'))
 
-        # Sanitize content
-        content = bleach.clean(content.strip(), tags=[], strip=True)
+        # Enhanced content sanitization using OWASP security
+        content = sanitize_message_content(content)
 
         if not content:
             flash('Comment cannot be empty', 'danger')
+            return redirect(request.referrer or url_for('home.home'))
+
+        # Additional length check
+        if len(content) > 500:
+            log_security_event('comment_too_long', {
+                'content_length': len(content),
+                'post_id': post_id
+            })
+            flash('Comment too long (max 500 characters)', 'danger')
             return redirect(request.referrer or url_for('home.home'))
 
         # Validate post exists
@@ -46,6 +72,9 @@ def add_comment():
         ).fetchone()
 
         if not post_check:
+            log_security_event('comment_on_nonexistent_post', {
+                'post_id': post_id
+            })
             flash('Post not found', 'danger')
             return redirect(url_for('home.home'))
 
@@ -75,12 +104,24 @@ def add_comment():
 
         print("Comment created successfully!")
         main_logger.info(f'User {current_user.username} added comment to post {post_id}')
+
+        # Security logging
+        log_security_event('comment_added', {
+            'post_id': post_id,
+            'comment_id': comment_id,
+            'content_length': len(content)
+        }, level='INFO')
+
         flash('Comment added successfully!', 'success')
 
     except Exception as e:
         db.session.rollback()
         print(f"ERROR: {str(e)}")
         main_logger.error(f'Error adding comment: {str(e)}')
+        log_security_event('comment_creation_error', {
+            'error': str(e),
+            'post_id': post_id
+        }, level='ERROR')
         flash('Failed to add comment. Please try again.', 'danger')
 
     # Redirect back to the post
@@ -89,25 +130,45 @@ def add_comment():
 
 @comments.route('/add_reply', methods=['POST'])
 @login_required
+@require_authentication
+@rate_limit('reply', limit=15, window=60)
+@secure_headers
 def add_reply():
     """Add a reply to a comment"""
     try:
         print("=== DEBUG: Add Reply ===")
         print(f"Form data: {request.form}")
 
-        # Get form data directly
+        # Get form data directly with enhanced validation
         comment_id = request.form.get('comment_id')
         content = request.form.get('content')
 
-        if not comment_id or not content:
+        # Enhanced validation
+        if not comment_id or not validate_uuid(comment_id):
+            log_security_event('invalid_comment_id_reply', {
+                'comment_id': comment_id
+            }, level='ERROR')
+            flash('Invalid comment ID', 'danger')
+            return redirect(request.referrer or url_for('home.home'))
+
+        if not content:
             flash('Missing comment ID or content', 'danger')
             return redirect(request.referrer or url_for('home.home'))
 
-        # Sanitize content
-        content = bleach.clean(content.strip(), tags=[], strip=True)
+        # Enhanced content sanitization using OWASP security
+        content = sanitize_message_content(content)
 
         if not content:
             flash('Reply cannot be empty', 'danger')
+            return redirect(request.referrer or url_for('home.home'))
+
+        # Additional length check
+        if len(content) > 500:
+            log_security_event('reply_too_long', {
+                'content_length': len(content),
+                'comment_id': comment_id
+            })
+            flash('Reply too long (max 500 characters)', 'danger')
             return redirect(request.referrer or url_for('home.home'))
 
         # Validate comment exists and get post_id
@@ -117,6 +178,9 @@ def add_reply():
         ).fetchone()
 
         if not comment_check:
+            log_security_event('reply_to_nonexistent_comment', {
+                'comment_id': comment_id
+            })
             flash('Comment not found', 'danger')
             return redirect(url_for('home.home'))
 
@@ -140,6 +204,15 @@ def add_reply():
         db.session.commit()
 
         main_logger.info(f'User {current_user.username} added reply to comment {comment_id}')
+
+        # Security logging
+        log_security_event('reply_added', {
+            'comment_id': comment_id,
+            'reply_id': reply_id,
+            'post_id': post_id,
+            'content_length': len(content)
+        }, level='INFO')
+
         flash('Reply added successfully!', 'success')
 
         # Redirect back to the post
@@ -149,14 +222,27 @@ def add_reply():
         db.session.rollback()
         print(f"ERROR: {str(e)}")
         main_logger.error(f'Error adding reply: {str(e)}')
+        log_security_event('reply_creation_error', {
+            'error': str(e),
+            'comment_id': comment_id
+        }, level='ERROR')
         flash('Failed to add reply. Please try again.', 'danger')
         return redirect(request.referrer or url_for('home.home'))
 
 
 @comments.route('/get_comments/<post_id>')
+@rate_limit('get_comments', limit=30, window=60)
+@secure_headers
 def get_comments(post_id):
     """API endpoint to get comments for a post (for AJAX loading)"""
     try:
+        # Enhanced validation
+        if not validate_uuid(post_id):
+            log_security_event('invalid_post_id_get_comments', {
+                'post_id': post_id
+            }, level='ERROR')
+            return jsonify({'success': False, 'error': 'Invalid post ID'}), 400
+
         # Get comments with user info
         comments_query = text("""
             SELECT 
@@ -189,7 +275,7 @@ def get_comments(post_id):
                 'reply_id': reply.REPLY_ID,
                 'content': reply.CONTENT,
                 'username': reply.USERNAME,
-                'user_pfp': reply.USERPFP or '/static/images/2903-default-blue.jpg',
+                'userpfp': "/static/images/profile_pictures/" + reply.USERPFP if reply.USERPFP else "/static/images/default_pfp.jpg",
                 'created_at': reply.CREATED_AT.strftime('%Y-%m-%d %H:%M:%S'),
                 'like_count': reply.LIKE_COUNT
             } for reply in replies_result]
@@ -198,15 +284,25 @@ def get_comments(post_id):
                 'comment_id': comment.COMMENT_ID,
                 'content': comment.CONTENT,
                 'username': comment.USERNAME,
-                'user_pfp': comment.USERPFP or '/static/images/2903-default-blue.jpg',
+                'userpfp': "/static/images/profile_pictures/" + comment.USERPFP if comment.USERPFP else "/static/images/default_pfp.jpg",
                 'created_at': comment.CREATED_AT.strftime('%Y-%m-%d %H:%M:%S'),
                 'like_count': comment.LIKE_COUNT,
                 'replies': replies_data
             })
+
+        # Security logging for API access
+        log_security_event('comments_retrieved', {
+            'post_id': post_id,
+            'comments_count': len(comments_data)
+        }, level='INFO')
 
         return jsonify({'success': True, 'comments': comments_data})
 
     except Exception as e:
         print(f"ERROR getting comments: {str(e)}")
         main_logger.error(f'Error getting comments: {str(e)}')
+        log_security_event('get_comments_error', {
+            'error': str(e),
+            'post_id': post_id
+        }, level='ERROR')
         return jsonify({'success': False, 'error': 'Failed to load comments'})

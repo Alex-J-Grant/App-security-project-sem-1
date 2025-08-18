@@ -85,7 +85,7 @@ def user_profile(username):
             'username': user.username,
             'fname': user.fname,
             'lname': user.lname,
-            'userpfp': user.userpfp if user.userpfp else '/static/images/2903-default-blue.jpg',
+            'userpfp': "/static/images/profile_pictures/" + user.userpfp if user.userpfp else "/static/images/default_pfp.jpg",
             'created_at': user.created_at.strftime('%B %Y') if hasattr(user, 'created_at') else 'Unknown',
             'total_posts': total_posts,
             'total_likes': total_likes,
