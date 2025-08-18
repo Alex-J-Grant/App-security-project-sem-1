@@ -21,6 +21,26 @@ def user_profile(username):
         if not user:
             abort(404)
 
+        # Get communities the user has joined
+        joined_comm_query = text("""
+            SELECT s.ID, s.NAME, s.COMM_PFP, s.TAG
+            FROM COMMUNITY_MEMBERS cm
+            JOIN SUBCOMMUNITY s ON cm.COMMUNITY_ID = s.ID
+            WHERE cm.USER_ID = :user_id
+        """)
+        joined_communities = db.session.execute(joined_comm_query, {"user_id": user.id}).fetchall()
+
+        # Format community data for template
+        joined_community_data = []
+        for comm in joined_communities:
+            joined_community_data.append({
+                "id": comm.ID,
+                "name": comm.NAME,
+                "tag": comm.TAG,
+                "icon": url_for('static',
+                                filename=f'images/profile_pictures/{comm.COMM_PFP}') if comm.COMM_PFP else '/static/images/SC_logo.png'
+            })
+
         # Get user's posts
         posts_query = text("""
             SELECT 
@@ -96,7 +116,9 @@ def user_profile(username):
 
         return render_template('user_profile.html',
                                user=user_profile_data,
-                               posts=posts)
+                               posts=posts,
+                               joined_communities=joined_community_data)
+
 
     except Exception as e:
         main_logger.error(f'Error loading user profile {username}: {str(e)}')
