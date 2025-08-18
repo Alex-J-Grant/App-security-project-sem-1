@@ -2,7 +2,10 @@ from flask_login import current_user
 from flask_wtf import FlaskForm
 from wtforms import EmailField, PasswordField, StringField, SubmitField
 from wtforms.validators import EqualTo, Length, Regexp,DataRequired,ValidationError, Email, Optional
+from flask_wtf.file import FileField, FileAllowed, FileRequired
 from models.user import User
+from helperfuncs.validation import allowed_mime_type, virus_check
+from helperfuncs.logger import main_logger
 
 
 
@@ -18,6 +21,7 @@ class Editprofile(FlaskForm):
     password = PasswordField('Change Password', validators=[Optional(), Length(min=10), Regexp(r'^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[!@#$%^&*])[A-Za-z\d!@#$%^&*]+$',message='Password must include uppercase, lowercase, number, and special character (!@#$%^&*).')])
     confirm_pw = PasswordField('Confirm New Password', validators=[Optional(), EqualTo('password', message='Passwords must match')])
     curr_password = PasswordField('Current Password', validators=[Optional(), Length(min=10), Regexp(r'^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[!@#$%^&*])[A-Za-z\d!@#$%^&*]+$',message='Password must include uppercase, lowercase, number, and special character (!@#$%^&*).')])
+    pfp = FileField('Profile Picture', validators=[Optional(), FileAllowed(['jpg', 'png', 'gif', 'jpeg'], 'Images only please (jpg, png, gif).')])
     submit = SubmitField('Edit Profile')
     # todo 
     # ensure no dupes for email and telno 
@@ -33,6 +37,29 @@ class Editprofile(FlaskForm):
         existing = User.query.filter_by(email=field.data).first()
         if existing and existing.id != current_user.id:
             raise ValidationError('This is already taken')
+
+    def validate_pfp(self, field):
+        file = field.data
+        if not file:
+            return  # skip if nothing uploaded
+
+        # MIME check
+        if not allowed_mime_type(file):
+            main_logger.warning(
+                f"Attempt to bypass file restrictions by {getattr(current_user, 'username', 'anon')} (id={getattr(current_user, 'id', 'N/A')})"
+            )
+            raise ValidationError("Images only please (jpg, png, gif).")
+
+        # Read file bytes for virus scan
+        file_bytes = file.read()
+        if virus_check(file_bytes) is not None:
+            main_logger.warning(
+                f"Attempt to upload virus-infected file by {getattr(current_user, 'username', 'anon')} (id={getattr(current_user, 'id', 'N/A')})"
+            )
+            raise ValidationError("Images only please (jpg, png, gif).")
+
+        file.seek(0)
+
 
 
 

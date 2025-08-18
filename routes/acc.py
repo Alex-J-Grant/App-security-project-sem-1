@@ -19,9 +19,12 @@ from helperfuncs.trusted_devices import generate_device_token, save_trusted_devi
     mark_device_verified
 from models.trusted_device import UserTrustedDevice,TrustedDevice
 
+from helperfuncs.local_url_check import is_local_url
+from rate_limiter_config import limiter
 account = Blueprint('account', __name__, url_prefix= '/account')
 
 @account.route('/create', methods = ['GET', 'POST'])
+@limiter.limit('5 per minute')
 def create():
     main_logger.info('User creation accessed')
     #form goes here 
@@ -74,6 +77,7 @@ def create():
         
 
 @account.route('/login', methods = ['GET', 'POST'])
+@limiter.limit('5 per minute')
 def login():
     main_logger.info('User login accessed')
     form = Loginuser()
@@ -82,6 +86,9 @@ def login():
         username = form.username.data.strip()
         user = User.query.filter_by(username = username).first()
         if user and user.check_password(form.password.data):
+            next_page = request.args.get('next')
+            if next_page and is_local_url(next_page):
+                session['next_page'] = next_page
             token = secrets.token_hex(3).upper()
             print(token)
             user.twofa_code = token
@@ -169,6 +176,7 @@ def login():
 
 
 @account.route('/2fa', methods = ['GET', 'POST'])
+@limiter.limit('5 per minute')
 def twofa():
     if current_user.is_authenticated:
         return redirect(url_for('home.home'))
@@ -208,10 +216,13 @@ def twofa():
                 user_sess.user_id = str(user.id)
                 user_sess.last_active = time
             db.session.commit()
-            if user.role == 'Admin':
+            next_page = session.pop('next_page', None)
+            if next_page:
+                return redirect(next_page)
+            elif user.role == 'Admin':
                 return redirect(url_for('admin.dashboard'))
-            flash('Login successful', 'success')
-            return redirect(url_for('home.home'))
+            else:
+                return redirect(url_for('home.home'))
         else:
             flash('Invalid or Expired Token', 'danger')
             user.twofa_code = None
@@ -240,6 +251,7 @@ def logout():
     return resp
 
 @account.route('/forgetpw', methods = ['GET', 'POST'])
+@limiter.limit('5 per minute')
 def forgetpw():
     form = Forgetpw()
     if form.validate_on_submit():
@@ -255,6 +267,7 @@ def forgetpw():
     return render_template('forgetpw.html', form = form)
 
 @account.route('/reset/<token>', methods = ['GET', 'POST'])
+@limiter.limit('5 per minute')
 def reset_token(token):
     user = User.verify_reset_token(token)
     if not user:

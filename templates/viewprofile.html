@@ -3,16 +3,36 @@
 {% block title %}User Profile{% endblock %}
 
 {% block content %}
-<h1>User Profile Data</h1>
-<ul>
-  <li><strong>Username:</strong> {{ username }}</li>
-  <li><strong>Email:</strong> {{ email }}</li>
-  <li><strong>Last Name:</strong> {{ lname }}</li>
-  <li><strong>First Name:</strong> {{ fname }}</li>
-  <li><strong>Telephone Number:</strong> {{ telno }}</li>
-  <li><strong>Address:</strong> {{ address + postal }}</li>
-  <li><strong>Gender:</strong> {{ gender }}</li>
-</ul>
-<a href="{{ url_for('profile.edit') }}" class="btn btn-primary">Edit Profile</a>
-<a href="{{ url_for('profile.delete') }}" class="btn btn-danger">Delete Account</a>
+<div class="container mt-4">
+  <div class="row">
+    <!-- Left: User info -->
+    <div class="col-md-8">
+      <h1>User Profile Data</h1>
+      <ul class="list-unstyled">
+        <li><strong>Username:</strong> {{ username }}</li>
+        <li><strong>Email:</strong> {{ email }}</li>
+        <li><strong>Last Name:</strong> {{ lname }}</li>
+        <li><strong>First Name:</strong> {{ fname }}</li>
+        <li><strong>Telephone Number:</strong> {{ telno }}</li>
+        <li><strong>Address:</strong> {{ address }} {{ postal }}</li>
+        <li><strong>Gender:</strong> {{ gender }}</li>
+      </ul>
+      <a href="{{ url_for('profile.edit') }}" class="btn btn-primary">Edit Profile</a>
+      <a href="{{ url_for('profile.delete') }}" class="btn btn-danger">Delete Account</a>
+    </div>
+    <div class="col-md-4 text-center">
+      <img 
+        src="{{ url_for('static', filename='images/profile_pictures/' ~ userpfp) if userpfp else url_for('static', filename='images/default_pfp.png') }}" 
+        alt="Profile Picture" 
+        class="img-thumbnail" 
+        style="width: 250px; height: 250px; object-fit: cover;">
+      <br><br>
+      <a href="{{ url_for('profile.edit') }}" class="btn btn-secondary">
+        Change Profile Picture
+      </a>
+    </div>
+ 
+  </div>
+</div>
 {% endblock %}
+
