@@ -4,6 +4,8 @@ from flask import request
 
 
 def is_local_url(target):
+    if not target:
+        return False
     host_url = urlparse(request.host_url)
     redirect_url = urlparse(urljoin(request.host_url, target))
     return (
