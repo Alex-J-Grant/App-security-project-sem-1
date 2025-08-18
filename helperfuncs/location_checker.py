@@ -17,7 +17,6 @@ def get_country_from_ip(ip):
 
 def compare_country(user_country, incoming_ip):
     incoming_country = get_country_from_ip(incoming_ip)
-
     if incoming_country is None:
         return "unknown"
 

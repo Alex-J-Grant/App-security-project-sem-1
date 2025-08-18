@@ -61,14 +61,24 @@ INSERT INTO USERS (
   NULL
 );
 
+-- Table for devices (represents one browser/computer/phone)
 CREATE TABLE trusted_devices (
-    id SERIAL PRIMARY KEY,
-    user_id INT NOT NULL REFERENCES users(user_id),
-    device_token_hash VARCHAR(128) NOT NULL,
-    user_agent TEXT,
-    ip_address VARCHAR(45),
-    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    last_used TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    device_token VARCHAR(64) NOT NULL UNIQUE,   -- unique token stored in cookie
+    verified BOOLEAN DEFAULT FALSE,             -- set TRUE after email verification
+    created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+    verified_at DATETIME NULL
+);
+
+-- Mapping table: links users to their devices
+CREATE TABLE user_trusted_devices (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    user_id VARCHAR(50) NOT NULL,              
+    device_id INT NOT NULL,
+    created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+    CONSTRAINT fk_user FOREIGN KEY (user_id) REFERENCES USERS(USER_ID) ON DELETE CASCADE,
+    CONSTRAINT fk_device FOREIGN KEY (device_id) REFERENCES trusted_devices(id) ON DELETE CASCADE,
+    UNIQUE KEY unique_user_device (user_id, device_id)
 );
 
 
