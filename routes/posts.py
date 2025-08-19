@@ -7,12 +7,15 @@ from extensions import db
 from wtforms import ValidationError
 from forms.postforms import PostForm
 from sqlalchemy import text
+from sqlalchemy.exc import IntegrityError
 from PIL import Image
 import bleach
 from flask_login import login_required,current_user
 from rate_limiter_config import limiter
 from helperfuncs.post_likes import has_liked_post
 from helperfuncs.local_url_check import is_local_url
+from helperfuncs.banneduser import banneduser
+
 UPLOAD_FOLDER_POST = 'static/images/post_images'
 
 view_post = Blueprint('view_post', __name__, url_prefix='/view_post')
@@ -70,6 +73,7 @@ def view_post_route(post_id):
 
 @create_post.route('/upload_post', methods=['GET', 'POST'])
 @limiter.limit("5 per minute")
+@banneduser
 @login_required
 def upload_post():
     form = PostForm()
@@ -147,6 +151,7 @@ def upload_post():
 
 @like_bp.route("/like/<string:post_id>/<action>", methods=["POST"])
 @limiter.limit("15 per minute")
+@banneduser
 def like_action(post_id, action):
 
     if not current_user.is_authenticated:
@@ -169,31 +174,33 @@ def like_action(post_id, action):
 
         liked = False
         if action == "like":
-            if not existing:
-                # insert like
-                conn.execute(
-                    text("INSERT INTO POST_LIKE (USER_ID, POST_ID) VALUES (:uid, :pid)"),
-                    {"uid": user_id, "pid": post_id}
-                )
-                # increment cached counter
-                conn.execute(
-                    text("UPDATE POST SET LIKE_COUNT = LIKE_COUNT + 1 WHERE POST_ID = :pid"),
-                    {"pid": post_id}
-                )
+            try:
+                if not existing:
+                    # insert like
+                    conn.execute(
+                        text("INSERT INTO POST_LIKE (USER_ID, POST_ID) VALUES (:uid, :pid)"),
+                        {"uid": user_id, "pid": post_id}
+                    )
+                    # increment cached counter
+                    conn.execute(
+                        text("UPDATE POST SET LIKE_COUNT = LIKE_COUNT + 1 WHERE POST_ID = :pid"),
+                        {"pid": post_id}
+                    )
+                    liked = True
+            except IntegrityError:
                 liked = True
-            else:
-                liked = True  # already liked
         # double check that the action is unlike
         elif action == "unlike":
             if existing:
-                conn.execute(
+                result = conn.execute(
                     text("DELETE FROM POST_LIKE WHERE USER_ID = :uid AND POST_ID = :pid"),
                     {"uid": user_id, "pid": post_id}
                 )
-                conn.execute(
-                    text("UPDATE POST SET LIKE_COUNT = LIKE_COUNT - 1 WHERE POST_ID = :pid AND LIKE_COUNT > 0"),
-                    {"pid": post_id}
-                )
+                if result.rowcount > 0:
+                    conn.execute(
+                        text("UPDATE POST SET LIKE_COUNT = LIKE_COUNT - 1 WHERE POST_ID = :pid AND LIKE_COUNT > 0"),
+                        {"pid": post_id}
+                    )
                 liked = False
             else:
                 liked = False  # was not liked

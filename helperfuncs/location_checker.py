@@ -1,10 +1,12 @@
+import os
+
 import requests
 from flask import request
 import json
 from helperfuncs.logger import main_logger
 def get_country_from_ip(ip):
     try:
-        response = requests.get(f"https://ipinfo.io/{ip}/json", timeout=3)
+        response = requests.get(f"https://ipinfo.io/{ip}?token={os.getenv("ipinfo_token")}", timeout=3)
         response.raise_for_status()  # raise for HTTP errors
         data = response.json()
         return data.get("country")  # returns 2-letter code like "SG"

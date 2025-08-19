@@ -17,5 +17,5 @@ def country_name_from_code(code: str):
         if country:
             return country.name
     except LookupError:
-        return None
+        return "Unknown"
     return None

@@ -32,7 +32,7 @@ from datetime import timedelta
 def create_app():
     app =Flask(__name__, static_folder = "static")
     app.config.from_mapping(
-        # need to change key very important
+        ipinfo_token = os.getenv("ipinfo_token"),
         SECRET_KEY=os.getenv("SECRET_KEY"),
         PEPPER = os.getenv('PEPPER'),
         SQLALCHEMY_DATABASE_URI="mysql+pymysql://developer:temppassword@localhost:3306/app_sec_db",

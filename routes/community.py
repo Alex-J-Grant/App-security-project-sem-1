@@ -10,9 +10,12 @@ from flask_login import login_required,current_user
 from helperfuncs.post_likes import has_liked_post
 from helperfuncs.community_member import has_joined_comm
 from rate_limiter_config import limiter
+from helperfuncs.banneduser import banneduser
+
 community = Blueprint('community',__name__,url_prefix='/communities')
 create_community = Blueprint('create_community',__name__)
 join_community = Blueprint("join_community", __name__)
+
 #first is for community banners then community profile pictures
 UPLOAD_FOLDERS = ["static/images/community_banners","static/images/profile_pictures"]
 
@@ -48,7 +51,7 @@ def community_route(subreddit_name):
         "joined": has_joined_comm(result["ID"])
     }
 
-
+    
     posts = []  # Fetch posts where SUBCOMMUNITY.ID matches
     query = text("""
                SELECT 
@@ -72,6 +75,7 @@ def community_route(subreddit_name):
     result = db.session.execute(query,{'subreddit_name':subreddit_name})
 
     for row in result:
+
         posts.append({
             'id': row.id,
             'title': row.title,
@@ -95,12 +99,15 @@ def community_route(subreddit_name):
 
 @create_community.route("/create_community", methods=["GET", "POST"])
 @login_required
+@banneduser
 def create_community_route():
     form = CreateCommunityForm()
     if form.validate_on_submit():
         # Sanitize inputs
         name = bleach.clean(form.name.data.strip(), tags=[], strip=True)
+        print(form.description.data)
         description = bleach.clean(form.description.data.strip(), tags=[], strip=True)
+        print(description)
         tag = bleach.clean(form.tag.data.strip(), tags=[], strip=True)
         banner_file = form.banner_image.data
         icon_file = form.icon_image.data

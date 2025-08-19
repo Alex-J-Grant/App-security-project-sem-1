@@ -17,9 +17,18 @@ def register_error_handlers(app):
     def not_found_error(error):
         return render_template('404.html'), 404
 
+    @app.errorhandler(403)
+    def forbidden_error(error):
+        return render_template('generic_error.html')
+
     @app.errorhandler(500)
     def internal_error(error):
         return render_template('500.html'), 500
+
+
+    @app.errorhandler(503)
+    def service_unavailable(error):
+        return render_template('generic_error.html')
 
     @app.errorhandler(CSRFError)
     def handle_csrf_error(e):
@@ -29,6 +38,8 @@ def register_error_handlers(app):
             return redirect(target)
         else:
             return redirect(url_for('home.home'))
+
+
 
 
 
