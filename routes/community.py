@@ -98,6 +98,7 @@ def community_route(subreddit_name):
 
 
 @create_community.route("/create_community", methods=["GET", "POST"])
+@limiter.limit("5 per minute")
 @login_required
 @banneduser
 def create_community_route():

@@ -73,8 +73,8 @@ def view_post_route(post_id):
 
 @create_post.route('/upload_post', methods=['GET', 'POST'])
 @limiter.limit("5 per minute")
-@banneduser
 @login_required
+@banneduser
 def upload_post():
     form = PostForm()
     with db.engine.connect() as conn:
