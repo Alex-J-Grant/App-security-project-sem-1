@@ -7,6 +7,7 @@ from helperfuncs.uuidgen import gen_uuid
 from helperfuncs.logger import main_logger
 import bleach
 from sqlalchemy import text
+from helperfuncs.banneduser import banneduser
 
 # Import security functions from your OWASP module
 from security.friends_owasp_security import (
@@ -19,6 +20,7 @@ comments = Blueprint('comments', __name__, url_prefix='/comments')
 
 @comments.route('/add_comment', methods=['POST'])
 @login_required
+@banneduser
 @require_authentication
 @rate_limit('comment', limit=10, window=60)
 @secure_headers
@@ -130,6 +132,8 @@ def add_comment():
 
 @comments.route('/add_reply', methods=['POST'])
 @login_required
+@banneduser
+
 @require_authentication
 @rate_limit('reply', limit=15, window=60)
 @secure_headers
