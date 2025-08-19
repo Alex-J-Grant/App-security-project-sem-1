@@ -23,7 +23,7 @@
     </div>
     <div class="col-md-4 text-center">
       <img 
-        src="{{ url_for('static', filename='images/profile_pictures/' ~ userpfp) if userpfp else url_for('static', filename='images/default_pfp.png') }}" 
+        src="{{ url_for('static', filename='images/profile_pictures/' ~ userpfp) if userpfp else url_for('static', filename='images/default_pfp.jpg') }}"
         alt="Profile Picture" 
         class="img-thumbnail" 
         style="width: 250px; height: 250px; object-fit: cover;">

@@ -8,7 +8,7 @@ search_bp = Blueprint('search', __name__)
 
 
 def sanitize_query(q: str) -> str:
-    return bleach.clean(q, tags=[])[:100]  # limit length
+    return bleach.clean(q, tags=[])[:80]  # limit length
 
 @search_bp.route("/search_suggestions")
 @limiter.limit("60 per minute")
@@ -54,7 +54,7 @@ def search_suggestions():
             """), {"like_q": like_q, "exact": q_clean, "prefix": f"{q_clean}%"}).mappings().all()
 
             communities = conn.execute(text("""
-                SELECT ID, NAME, COMM_PFP
+                SELECT ID, NAME, COMM_PFP,MEMBER_COUNT
                 FROM SUBCOMMUNITY
                 WHERE NAME LIKE :like_q
                 ORDER BY NAME = :exact DESC, NAME LIKE :prefix DESC
@@ -71,7 +71,8 @@ def search_suggestions():
     communities_out = [{
         "id": c["ID"],
         "name": c["NAME"],
-        "pfp": "/static/images/profile_pictures/" + c["COMM_PFP"] if c["COMM_PFP"] else "/static/images/SC_logo.png"
+        "pfp": "/static/images/profile_pictures/" + c["COMM_PFP"] if c["COMM_PFP"] else "/static/images/SC_logo.png",
+        "mem_count":c["MEMBER_COUNT"]
     } for c in communities]
 
     return jsonify({"users": users_out, "communities": communities_out})
@@ -80,8 +81,9 @@ def search_suggestions():
 @search_bp.route("/search")
 def search_page():
     q = request.args.get("q", "")
+
     q_clean = sanitize_query(q)
-    print(q_clean)
+
     users = []
     communities = []
     if q_clean:

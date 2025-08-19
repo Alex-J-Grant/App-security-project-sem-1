@@ -172,7 +172,8 @@ def login():
                 signed_token = serializer.dumps({'user_id': user.id, 'device_token': temp_token})
                 verify_link = url_for('account.verify_new_device', token=signed_token, _external=True)
                 print(verify_link)
-                # send_email(verify_link, user.email, f"{user.fname} {user.lname}", "verify_new_device")
+
+                send_email(verify_link, user.email, f"{user.fname} {user.lname}", "verify_new_device",device=request.user_agent)
 
                 flash("New device detected. Please verify via the email we sent you.", "warning")
                 return resp_not_trusted
