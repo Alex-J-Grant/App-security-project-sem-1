@@ -21,14 +21,16 @@ class User(db.Model, UserMixin):
     email = db.Column('EMAIL', db.String(255), unique = True, nullable = False)
     country = db.Column('COUNTRY', db.String(2), nullable = False)
     is_activeuser = db.Column('IS_ACTIVE', db.Boolean, default = True)
-    is_verifieduser = db.Column('IS_VERIFIED', db.Boolean, default = False)
     created_at = db.Column('CREATED_AT', db.DateTime(timezone = True), default=lambda: datetime.now(timezone.utc), nullable = False)
     role = db.Column('ROLE', db.Enum('Admin', 'User', name='user_roles'), default = 'User', nullable = False)
     settings = db.Column('SETTINGS', db.JSON)
     userpfp = db.Column('USERPFP', db.String(255))
     twofa_code = db.Column('TWOFA_CODE', db.String(6))
     twofa_exp = db.Column('TWOFA_EXP', db.DateTime(timezone = True), default=lambda: datetime.now(timezone.utc))
+    failed_attempts = db.Column('FAILED_ATTEMPTS', db.Integer, default=0)
+    lockout_until = db.Column('LOCKOUT_TIL', db.DateTime(timezone = True), nullable = True)
     ban_requests = db.relationship('BanReq', cascade = 'all, delete-orphan', backref = 'user')
+
 
     @property
     def password(self):

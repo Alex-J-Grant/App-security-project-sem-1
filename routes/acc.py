@@ -85,6 +85,15 @@ def login():
     if form.validate_on_submit():
         username = form.username.data.strip()
         user = User.query.filter_by(username = username).first()
+        if user and user.lockout_until and user.lockout_until > datetime.now(timezone.utc):
+            remaining = user.lockout_until - datetime.now(timezone.utc)
+            minutes = int(remaining.total_seconds()//60) + 1
+            flash(f'Account locked. Please try again in {minutes} minutes', 'danger')
+            return redirect(url_for('account.login'))
+        elif user:
+            user.failed_attempts = 0
+            user.lockout_until = None
+            db.session.commit()
         if user and user.check_password(form.password.data):
             next_page = request.args.get('next')
             if next_page and is_local_url(next_page):
@@ -96,7 +105,6 @@ def login():
             db.session.commit()
             print(user.email)
             print(form.remember.data)
-
 
             if compare_country(user.country,request.remote_addr) != "match":
                 send_email("",user.email,f"{user.fname} {user.lname}","warning_new_country",get_country_from_ip(request.remote_addr))
@@ -166,10 +174,23 @@ def login():
             
             session['pending_2fa'] = user.id
             session['rememberme'] = form.remember.data
+            user.failed_attempts = 0
+            db.session.commit()
 
             return redirect(url_for('account.twofa'))
         else:
-            flash('Invalid Credentials', 'danger')
+
+            if not user:
+                flash('Invalid credentials', 'danger')
+                return redirect(url_for('account.login'))
+            user.failed_attempts += 1
+            if user.failed_attempts >= 5:
+                user.lockout_until = datetime.now(timezone.utc) + timedelta(minutes=60)
+                flash('Too many failed attempts. Your account is now locked for 1 hour', 'danger')
+
+            else:
+                flash(f'Invalid credentials.', 'danger')
+            db.session.commit()
             return redirect(url_for('account.login'))
     
     return render_template('login.html', form=form)
