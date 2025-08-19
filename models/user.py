@@ -38,11 +38,11 @@ class User(db.Model, UserMixin):
 
     @password.setter
     def password(self, plaintext):
-        self.password_hash = generate_password_hash(plaintext)
+        self.password_hash = generate_password_hash(current_app.config['PEPPER'] + plaintext)
 
 
     def check_password(self, password):
-        return check_password_hash(self.password_hash, password)
+        return check_password_hash(self.password_hash, current_app.config['PEPPER'] + password)
 
     def get_reset_token(self):
         serial = URLSafeTimedSerializer(current_app.config['SECRET_KEY'])

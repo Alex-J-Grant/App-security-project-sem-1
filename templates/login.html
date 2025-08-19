@@ -24,12 +24,9 @@
     {% endfor %}
   </p>
 
-  <label>
-      {{ form.remember() }} {{ form.remember.label }}
-    </label><br>
-
   <p>{{ form.submit() }}</p>
 
 </form>
 <a href="{{ url_for('account.forgetpw') }}" class="btn btn-danger">Forget Password</a>
+<a href="{{ url_for('account.create') }}" class="btn btn-primary">Create Account</a>
 {% endblock %}

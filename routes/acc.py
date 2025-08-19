@@ -1,6 +1,7 @@
 from flask import Blueprint, render_template, redirect, url_for, flash, request, current_app, make_response
 from itsdangerous import NoneAlgorithm, URLSafeSerializer,URLSafeTimedSerializer
 from sqlalchemy.engine import url
+from sqlalchemy.sql.elements import ExpressionClauseList
 from helperfuncs.logger import main_logger
 from helperfuncs.location_checker import compare_country,get_country_from_ip
 from flask_login import login_user, login_required, logout_user, current_user
@@ -86,15 +87,20 @@ def login():
     if form.validate_on_submit():
         username = form.username.data.strip()
         user = User.query.filter_by(username = username).first()
-        if user and user.lockout_until and user.lockout_until > datetime.now(timezone.utc):
-            remaining = user.lockout_until - datetime.now(timezone.utc)
+        if user and user.lockout_until:
+            lockout_until = user.lockout_until.replace(tzinfo=timezone.utc)
+        else:
+            lockout_until = None
+        if user and lockout_until and lockout_until > datetime.now(timezone.utc):
+            remaining = lockout_until - datetime.now(timezone.utc)
             minutes = int(remaining.total_seconds()//60) + 1
             flash(f'Account locked. Please try again in {minutes} minutes', 'danger')
-            return redirect(url_for('account.login'))
-        elif user:
+            return render_template('login.html', form=form)
+        elif user and lockout_until and lockout_until <= datetime.now(timezone.utc):
             user.failed_attempts = 0
             user.lockout_until = None
             db.session.commit()
+
         if user and user.check_password(form.password.data):
             next_page = request.args.get('next')
             if next_page and is_local_url(next_page):
@@ -105,7 +111,6 @@ def login():
             user.twofa_exp = datetime.now(timezone.utc) + timedelta(minutes = 5)
             db.session.commit()
             print(user.email)
-            print(form.remember.data)
 
             if compare_country(user.country,request.remote_addr) != "match":
                 send_email("",user.email,f"{user.fname} {user.lname}","warning_new_country",get_country_from_ip(request.remote_addr))
@@ -150,12 +155,12 @@ def login():
                 resp.delete_cookie("temp_device")
                 flash('This device is now trusted!', 'success')
                 session['pending_2fa'] = user.id
-                session['rememberme'] = form.remember.data
                 return resp
 
             # If no trusted device → set a temp unverified device
             if not device_token or not is_trusted_device(user.id, device_token):
-                resp_not_trusted = make_response(redirect(url_for('account.login')))
+                # resp_not_trusted = make_response(redirect(url_for('account.login')))
+                resp_not_trusted = make_response(render_template('verify_device.html'))
                 temp_token = generate_device_token()
                 save_trusted_device(user.id, temp_token, verified=False)
 
@@ -174,7 +179,6 @@ def login():
             send_email(token, user.email, user.username, '2FA')
             
             session['pending_2fa'] = user.id
-            session['rememberme'] = form.remember.data
             user.failed_attempts = 0
             db.session.commit()
 
@@ -192,7 +196,7 @@ def login():
             else:
                 flash(f'Invalid credentials.', 'danger')
             db.session.commit()
-            return redirect(url_for('account.login'))
+            return render_template('login.html', form=form)
     
     return render_template('login.html', form=form)
 
@@ -204,8 +208,6 @@ def twofa():
         return redirect(url_for('home.home'))
     form = Twofa()
     user_id = session.get('pending_2fa', None)
-    remember_me = session.get('rememberme', None)
-    print(remember_me)
     if not user_id:
         flash('Session expired. Please try again', 'danger')
         return redirect(url_for('account.login'))
@@ -222,7 +224,6 @@ def twofa():
         if user.twofa_exp and datetime.now(timezone.utc) < twofa_exp and token == user.twofa_code:
             login_user(user, remember = False)
             session.pop('pending_2fa', None)
-            session.pop('rememberme', None)
             user.twofa_code = None
             user.twofa_exp = None
             db.session.commit()

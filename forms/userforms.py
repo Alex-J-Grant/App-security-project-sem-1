@@ -45,7 +45,6 @@ class Createuser(FlaskForm):
 class Loginuser(FlaskForm):
     username = StringField('Username', validators=[DataRequired(), Length(min=5, max=20)])
     password = PasswordField('Password', validators=[DataRequired(), Length(min=10)])
-    remember = BooleanField('Remember Me')
     submit = SubmitField('Login')
 
 class Twofa(FlaskForm):

@@ -34,6 +34,7 @@ def create_app():
     app.config.from_mapping(
         # need to change key very important
         SECRET_KEY=os.getenv("SECRET_KEY"),
+        PEPPER = os.getenv('PEPPER'),
         SQLALCHEMY_DATABASE_URI="mysql+pymysql://developer:temppassword@localhost:3306/app_sec_db",
         SQLALCHEMY_TRACK_MODIFICATIONS=False,
         MAX_CONTENT_LENGTH = 16 * 1024 * 1024,
