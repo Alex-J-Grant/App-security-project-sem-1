@@ -94,6 +94,7 @@ def login():
         if user and lockout_until and lockout_until > datetime.now(timezone.utc):
             remaining = lockout_until - datetime.now(timezone.utc)
             minutes = int(remaining.total_seconds()//60) + 1
+            main_logger.info('Account is locked out')
             flash(f'Account locked. Please try again in {minutes} minutes', 'danger')
             return render_template('login.html', form=form)
         elif user and lockout_until and lockout_until <= datetime.now(timezone.utc):
@@ -204,6 +205,7 @@ def login():
 @account.route('/2fa', methods = ['GET', 'POST'])
 @limiter.limit('5 per minute')
 def twofa():
+    main_logger.info('2fa accessed')
     if current_user.is_authenticated:
         return redirect(url_for('home.home'))
     form = Twofa()
@@ -276,6 +278,7 @@ def logout():
 @account.route('/forgetpw', methods = ['GET', 'POST'])
 @limiter.limit('5 per minute')
 def forgetpw():
+    main_logger.info('Forget password accessed')
     form = Forgetpw()
     if form.validate_on_submit():
         email = form.email.data.strip()
@@ -292,6 +295,7 @@ def forgetpw():
 @account.route('/reset/<token>', methods = ['GET', 'POST'])
 @limiter.limit('5 per minute')
 def reset_token(token):
+    main_logger.info('Password reset accessed')
     user = User.verify_reset_token(token)
     if not user:
         flash('Invalid or Expired token', 'danger')
