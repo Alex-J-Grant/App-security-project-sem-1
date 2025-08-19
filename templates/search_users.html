@@ -27,7 +27,7 @@
                     <div class="card">
                         <div class="card-body">
                             <div class="d-flex align-items-center">
-                                <img src="{{ user.userpfp or url_for('static', filename='images/John_Placeholder.png') }}"
+                                <img src="{{ user.userpfp }}"
                                      class="rounded-circle me-3" width="50" height="50" alt="Profile">
                                 <div class="flex-grow-1">
                                     <h5 class="card-title mb-1">{{ user.fname }} {{ user.lname }}</h5>

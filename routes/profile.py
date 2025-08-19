@@ -12,6 +12,7 @@ from helperfuncs.rba import *
 from helperfuncs.banneduser import banneduser
 import os
 from PIL import Image
+from models.trusted_device import UserTrustedDevice,TrustedDevice
 import uuid
 profile = Blueprint('profile', __name__, url_prefix= '/profile')
 profile_picture_path = 'static/images/profile_pictures'
@@ -108,8 +109,22 @@ def delete():
         if not current_user.check_password(form.password.data):
             flash('Password is wrong', 'danger')
             return render_template('delprofile.html', form=form)
+
+        # ensure all trusted device info is removed
+        user_devices = UserTrustedDevice.query.filter_by(user_id=current_user.id).all()
+
+        device_id = [d.device_id for d in user_devices]
+
+        UserTrustedDevice.query.filter_by(user_id=current_user.id).delete()
+
+        if device_id:
+            TrustedDevice.query.filter(TrustedDevice.id.in_(device_id)).delete(
+                synchronize_session=False)
+
         db.session.delete(current_user)
         db.session.commit()
+
+
         logout_user()
         flash('Accounted Deleted')
         return redirect(url_for('account.login'))

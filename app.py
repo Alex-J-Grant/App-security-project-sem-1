@@ -1,3 +1,6 @@
+import os
+import secrets
+
 from flask import Flask
 from extensions import db
 from extensions import login_manager,mail
@@ -28,10 +31,9 @@ from datetime import timedelta
 
 def create_app():
     app =Flask(__name__, static_folder = "static")
-
     app.config.from_mapping(
         # need to change key very important
-        SECRET_KEY="SECRET",
+        SECRET_KEY=os.getenv("SECRET_KEY"),
         SQLALCHEMY_DATABASE_URI="mysql+pymysql://developer:temppassword@localhost:3306/app_sec_db",
         SQLALCHEMY_TRACK_MODIFICATIONS=False,
         MAX_CONTENT_LENGTH = 16 * 1024 * 1024,

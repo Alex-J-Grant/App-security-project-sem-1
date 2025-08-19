@@ -117,8 +117,7 @@ function displayComments(comments) {
             <div class="card mb-3">
                 <div class="card-body">
                     <div class="d-flex align-items-start">
-                        <img src="${comment.user_pfp}" class="rounded-circle me-3"
-                             width="40" height="40" alt="User">
+                        <img src="${comment.userpfp}" class="avatar me-3" width="40" height="40" alt="User">
                         <div class="flex-grow-1">
                             <div class="d-flex align-items-center mb-2">
                                 <a href="/users/${comment.username}" class="post_link">
@@ -156,7 +155,7 @@ function displayComments(comments) {
                                 ${comment.replies.map(reply => `
                                     <div class="border-start ps-3 mb-2">
                                         <div class="d-flex align-items-start">
-                                            <img src="${reply.user_pfp}" class="rounded-circle me-2"
+                                            <img src="${reply.userpfp}" class="avatar me-2"
                                                  width="32" height="32" alt="User">
                                             <div>
                                                 <div class="d-flex align-items-center mb-1">
@@ -179,6 +178,7 @@ function displayComments(comments) {
         container.innerHTML += commentHtml;
     });
 }
+
 
 function toggleReplyForm(commentId) {
     const form = document.getElementById(`reply-form-${commentId}`);
