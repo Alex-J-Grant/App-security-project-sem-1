@@ -51,7 +51,7 @@ def community_route(subreddit_name):
         "joined": has_joined_comm(result["ID"])
     }
 
-    
+
     posts = []  # Fetch posts where SUBCOMMUNITY.ID matches
     query = text("""
                SELECT 
