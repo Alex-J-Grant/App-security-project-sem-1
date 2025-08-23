@@ -10,6 +10,7 @@ class TrustedDevice(db.Model):
     verified = db.Column(db.Boolean, default=False)   # starts as False
     created_at = db.Column(db.DateTime, default=datetime.now(timezone.utc))
     verified_at = db.Column(db.DateTime)
+    last_used = db.Column(db.DateTime, default=db.func.now(), onupdate=db.func.now())
 
 class UserTrustedDevice(db.Model):
     __tablename__ = 'user_trusted_devices'

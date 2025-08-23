@@ -9,13 +9,12 @@ import bleach
 from flask_limiter import Limiter
 from flask_login import login_required, current_user
 from rate_limiter_config import limiter
+from helperfuncs.logger import main_logger
 #set max length for inputs
 MAX_LENGTH = 255
 
 genai.configure(api_key=os.getenv("GOOGLE_API_KEY"))
 
-#watch out for dangerous keywords
-dangerous_patterns = ['system:', 'ignore previous', 'act as']
 
 
  # Allow safe tags used by Markdown + code rendering
@@ -36,8 +35,6 @@ def chatbot_route():
         if len(user_input) > MAX_LENGTH:
             return jsonify({'response': "Sorry input is too long,Please shorten it."})
 
-        if any(pat in user_input.lower() for pat in dangerous_patterns):
-            return jsonify({'response': "Input contains restricted content."})
 
         print(f"User Input: {user_input}")
 
@@ -57,11 +54,11 @@ def chatbot_route():
             raw_html = markdown.markdown(bot_response)
 
             # Step 4: Sanitize Markdown HTML to allow only safe tags
-            safe_html = bleach.clean(raw_html, tags=ALLOWED_TAGS)
+            safe_html = bleach.clean(raw_html, tags=ALLOWED_TAGS,attributes={})
 
             print("Sanitized Bot Response:", safe_html)
             return jsonify({'response': safe_html})
 
         except Exception as e:
-            print("Error in chatbot:", e)
+            main_logger.warning(f"Chatbot failed to respond {e}")
             return jsonify({'response': "Sorry, I can't respond to that input."})

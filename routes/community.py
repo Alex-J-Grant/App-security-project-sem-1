@@ -11,6 +11,7 @@ from helperfuncs.post_likes import has_liked_post
 from helperfuncs.community_member import has_joined_comm
 from rate_limiter_config import limiter
 from helperfuncs.banneduser import banneduser
+from helperfuncs.logger import main_logger
 
 community = Blueprint('community',__name__,url_prefix='/communities')
 create_community = Blueprint('create_community',__name__)
@@ -167,6 +168,7 @@ def create_community_route():
             return redirect(url_for("home.home"))
         except Exception as e:
             # Delete saved files
+            main_logger.warning(f"Post upload failed for {current_user.id}, {e}")
             for path in saved_file_paths:
                 if os.path.exists(path):
                     os.remove(path)

@@ -67,7 +67,8 @@ CREATE TABLE trusted_devices (
     device_token VARCHAR(64) NOT NULL UNIQUE,   -- unique token stored in cookie
     verified BOOLEAN DEFAULT FALSE,             -- set TRUE after email verification
     created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
-    verified_at DATETIME NULL
+    verified_at DATETIME NULL,
+    last_used DATETIME NULL
 );
 
 -- Mapping table: links users to their devices

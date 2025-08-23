@@ -15,6 +15,7 @@ from rate_limiter_config import limiter
 from helperfuncs.post_likes import has_liked_post
 from helperfuncs.local_url_check import is_local_url
 from helperfuncs.banneduser import banneduser
+from helperfuncs.logger import main_logger
 
 UPLOAD_FOLDER_POST = 'static/images/post_images'
 
@@ -140,6 +141,7 @@ def upload_post():
             return redirect(url_for('home.home'))
         except Exception as e:
             # Delete saved files if exists, if an exception occurs
+            main_logger.warning(f"Post upload failed for {current_user.id}, {e}")
             if os.path.exists(filepath):
                 os.remove(filepath)
             flash("Sorry something went wrong please try again later.", "danger")

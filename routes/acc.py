@@ -17,7 +17,7 @@ import secrets
 from flask import session
 from sqlalchemy import text
 from helperfuncs.trusted_devices import generate_device_token, save_trusted_device, is_trusted_device, \
-    mark_device_verified
+    mark_device_verified,temp_cookie_name,trusted_cookie_name,rotate_trusted_device
 from models.trusted_device import UserTrustedDevice,TrustedDevice
 
 from helperfuncs.local_url_check import is_local_url
@@ -49,29 +49,21 @@ def create():
         db.session.add(user)
         db.session.commit()
 
-        #make the device making the account trusted
-        user = User.query.filter_by(username=form.username.data.strip()).first()
+        # Trust the device that created the account (server-side verified)
         device_token = generate_device_token()
-        save_trusted_device(user.id,device_token,verified=True)
-        serializer = URLSafeSerializer(current_app.config['SECRET_KEY'])
-        cookie = request.cookies.get("trusted_devices")
+        save_trusted_device(user.id, device_token, verified=True)
         mark_device_verified(device_token)
-        trusted_map = {}
-        if cookie:
-            try:
-                trusted_map = serializer.loads(cookie)
-            except Exception:
-                trusted_map = {}
-        trusted_map[str(user.id)] = device_token
-        signed_cookie = serializer.dumps(trusted_map)
+
+
+        cname = trusted_cookie_name(user.id)
         resp = make_response(redirect(url_for('account.login')))
         resp.set_cookie(
-            "trusted_devices",
-            signed_cookie,
-            max_age=365 * 24 * 3600,
+            cname,
+            device_token,  # store token directly; server validates it
+            max_age=90 * 24 * 3600,
             secure=True,
             httponly=True,
-            samesite='Lax'
+            samesite='Strict'
         )
         flash('Account Created')
         return resp
@@ -114,69 +106,62 @@ def login():
             print(user.email)
 
             if compare_country(user.country,request.remote_addr) != "match":
+                location = get_country_from_ip(request.remote_addr)
+                main_logger.warning(f"Log in from new location ({"Unknown" if location is None else location}) on account:{user.id}")
                 send_email("",user.email,f"{user.fname} {user.lname}","warning_new_country",get_country_from_ip(request.remote_addr))
 
-            serializer = URLSafeSerializer(current_app.config['SECRET_KEY'])
 
-            # Check trusted cookie
-            cookie = request.cookies.get("trusted_devices")
 
-            trusted_map = {}
-            if cookie:
-                try:
-                    trusted_map = serializer.loads(cookie)
-                except Exception:
-                    trusted_map = {}
+            # get device trust cookies
+            tname = trusted_cookie_name(user.id)
+            current_trusted_token = request.cookies.get(tname)
 
-            device_token = trusted_map.get(str(user.id))
 
-            # Check if device currently that is pending for approval has been approved
-            temp_token = request.cookies.get("temp_device")
+
+            #see if any pending requests to get the device trusted has been verified
+            temp_name = temp_cookie_name(user.id)
+            temp_token = request.cookies.get(temp_name)
             if temp_token and is_trusted_device(user.id, temp_token):
-                serializer = URLSafeSerializer(current_app.config['SECRET_KEY'])
-                cookie = request.cookies.get("trusted_devices")
-                trusted_map = {}
-                if cookie:
-                    try:
-                        trusted_map = serializer.loads(cookie)
-                    except Exception:
-                        trusted_map = {}
-                trusted_map[str(user.id)] = temp_token
-                signed_cookie = serializer.dumps(trusted_map)
-
+                #change to persistent cookie if verified
                 resp = make_response(redirect(url_for('account.twofa')))
                 resp.set_cookie(
-                    "trusted_devices",
-                    signed_cookie,
-                    max_age=365 * 24 * 3600,
+                    tname,
+                    temp_token,
+                    max_age=90 * 24 * 3600,
                     secure=True,
                     httponly=True,
-                    samesite='Lax'
+                    samesite='Strict'
                 )
-                resp.delete_cookie("temp_device")
+                resp.delete_cookie(temp_name)
                 flash('This device is now trusted!', 'success')
                 session['pending_2fa'] = user.id
                 return resp
 
-            # If no trusted device → set a temp unverified device
-            if not device_token or not is_trusted_device(user.id, device_token):
-                # resp_not_trusted = make_response(redirect(url_for('account.login')))
-                resp_not_trusted = make_response(render_template('verify_device.html'))
+            #if not currently trusted with account then start new verification
+            if not current_trusted_token or not is_trusted_device(user.id, current_trusted_token):
                 temp_token = generate_device_token()
                 save_trusted_device(user.id, temp_token, verified=False)
 
-                # Set temp cookie (1 hour lifespan)
-                resp_not_trusted.set_cookie("temp_device", temp_token, max_age=3600, secure=True, httponly=True)
+                # 1-hr temp cookie for THIS user only
+                resp = make_response(render_template('verify_device.html'))
+                resp.set_cookie(
+                    temp_name,
+                    temp_token,
+                    max_age=3600,
+                    secure=True,
+                    httponly=True,
+                    samesite='Strict'
+                )
 
-                # Send verification email
+                # Email verification link (contains user_id + device_token)
+                serializer = URLSafeTimedSerializer(current_app.config['SECRET_KEY'])
                 signed_token = serializer.dumps({'user_id': user.id, 'device_token': temp_token})
                 verify_link = url_for('account.verify_new_device', token=signed_token, _external=True)
-                print(verify_link)
-
-                send_email(verify_link, user.email, f"{user.fname} {user.lname}", "verify_new_device",device=request.user_agent)
+                send_email(verify_link, user.email, f"{user.fname} {user.lname}",
+                           "verify_new_device", device=request.user_agent)
 
                 flash("New device detected. Please verify via the email we sent you.", "warning")
-                return resp_not_trusted
+                return resp
 
             send_email(token, user.email, user.username, '2FA')
             
@@ -234,6 +219,27 @@ def twofa():
             sess_id = request.cookies.get(cookie_name)
             user_sess = Usersession.query.get(sess_id)
             time = datetime.now(timezone.utc)
+
+            #get device trust cookies
+            tname = trusted_cookie_name(user.id)
+            current_trusted_token = request.cookies.get(tname)
+            # if passed 2fa then rotate the token
+            if current_trusted_token and is_trusted_device(user.id, current_trusted_token):
+                # Rotate the token
+                new_token = rotate_trusted_device(user.id, current_trusted_token)
+                if new_token:
+                    resp = make_response(redirect(url_for('account.twofa')))
+                    resp.set_cookie(
+                        tname,
+                        new_token,
+                        max_age=90 * 24 * 3600,
+                        secure=True,
+                        httponly=True,
+                        samesite='Strict'
+                    )
+                    session['pending_2fa'] = user.id
+                    return resp
+
             if not user_sess:
                 user_sess = Usersession(session_id = sess_id, user_id = str(user.id), created_at = time, last_active = time)
                 db.session.add(user_sess)
@@ -316,9 +322,10 @@ def reset_token(token):
 
 @account.route('/verify_device/<token>', methods=['GET'])
 def verify_new_device(token):
-    serializer = URLSafeSerializer(current_app.config['SECRET_KEY'])
+    s = URLSafeTimedSerializer(current_app.config['SECRET_KEY'])
     try:
-        data = serializer.loads(token)
+        # 15 minutes expiry
+        data = s.loads(token, max_age=15*60)
         user_id = data['user_id']
         device_token = data['device_token']
     except Exception:
@@ -327,11 +334,24 @@ def verify_new_device(token):
 
     user = User.query.get(user_id)
     if not user:
-        flash("User not found.", "danger")
+        flash("Invalid or expired verification link.", "danger")
         return redirect(url_for('account.login'))
 
-    # Mark device as verified in DB
-    mark_device_verified(device_token)
+    # Ensure the device token exists AND is linked to user before verifying
+    device = TrustedDevice.query.filter_by(device_token=device_token).first()
+    if not device:
+        flash("Invalid or expired verification link.", "danger")
+        return redirect(url_for('account.login'))
+
+    link = UserTrustedDevice.query.filter_by(user_id=user_id, device_id=device.id).first()
+    if not link:
+        flash("Invalid or expired verification link.", "danger")
+        return redirect(url_for('account.login'))
+
+    if not device.verified:
+        device.verified = True
+        device.verified_at = datetime.now(timezone.utc)
+        db.session.commit()
 
     return render_template("trust_device_success.html")
 
@@ -367,7 +387,7 @@ def untrust_all_devices():
 
         # Clear trusted_devices cookie on this browser
         resp = make_response(redirect(url_for('profile.view')))
-        resp.delete_cookie("trusted_devices")
+        resp.delete_cookie(trusted_cookie_name(current_user.id))
         flash("All devices have been untrusted. You will need to trust them again next log in.", "warning")
         return resp
 
