@@ -14,6 +14,7 @@ import os
 from PIL import Image
 from models.trusted_device import UserTrustedDevice,TrustedDevice
 import uuid
+from sqlalchemy import text
 profile = Blueprint('profile', __name__, url_prefix= '/profile')
 profile_picture_path = 'static/images/profile_pictures'
 
@@ -121,7 +122,7 @@ def delete():
             TrustedDevice.query.filter(TrustedDevice.id.in_(device_id)).delete(
                 synchronize_session=False)
 
-        db.session.delete(current_user)
+        db.session.execute(text("DELETE FROM USERS WHERE USER_ID = :uid"), {'uid': current_user.id})
         db.session.commit()
 
 
